@@ -40,6 +40,15 @@
         "voltageMapHidden": "La carte de tension est masquée.",
         "valuesShown": "Les valeurs numériques sont affichées.",
         "valuesHidden": "Les valeurs numériques sont masquées."
+      },
+      "keyboardHelp": {
+        "heading": "Déplacer et retirer les outils",
+        "move": "Déplacer",
+        "moveDescription": "Utilisez les flèches ou W, A, S, D pour déplacer les charges, les capteurs, le voltmètre ou chaque extrémité du mètre ruban.",
+        "slower": "Déplacer plus lentement (sans alignement des charges)",
+        "slowerDescription": "Maintenez Maj pendant le déplacement pour faire de plus petits pas. Lorsque les charges sont alignées sur la grille, elles avancent toujours d’un demi-mètre par pas.",
+        "remove": "Retirer ou ranger",
+        "removeDescription": "Appuyez sur Suppr ou Retour arrière sur une charge ou un capteur pour le retirer, ou sur la poignée du voltmètre ou une extrémité du mètre ruban pour ranger l’outil."
       }
     }
   },

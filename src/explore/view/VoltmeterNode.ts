@@ -15,6 +15,7 @@ import {
 } from "scenerystack/scenery";
 import { EraserButton } from "scenerystack/scenery-phet";
 import { RectangularPushButton } from "scenerystack/sun";
+import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { VOLTMETER_CROSSHAIR_RADIUS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -26,7 +27,6 @@ import { potentialCSS } from "./potentialColor.js";
 
 const R = VOLTMETER_CROSSHAIR_RADIUS;
 const BODY_WIDTH = 112;
-const BUTTON_BASE_COLOR = "#f2f2f2";
 
 /** Crosshair ring and the mount below it; the origin is the measuring point. */
 function createCrosshair(): { node: Node; ring: Circle } {
@@ -54,21 +54,36 @@ function createBody(content: Node): Node {
 
 /** A small pencil, drawn tip-down-left, for the "plot equipotential" button. */
 function createPencilIcon(): Node {
-  const body = new Rectangle(0, -3.5, 16, 7, { fill: "#f5c542", stroke: "#6b5310", lineWidth: 1 });
-  const eraser = new Rectangle(16, -3.5, 4, 7, { fill: "#e88a9a", stroke: "#6b5310", lineWidth: 1 });
-  const tip = new Path(new Shape().moveTo(0, -3.5).lineTo(-7, 0).lineTo(0, 3.5).close(), {
-    fill: "#e9c99a",
-    stroke: "#6b5310",
+  const body = new Rectangle(0, -3.5, 16, 7, {
+    fill: ElectricFieldMapperColors.pencilBodyColorProperty,
+    stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
     lineWidth: 1,
   });
-  const lead = new Path(new Shape().moveTo(-4.5, -1.3).lineTo(-7, 0).lineTo(-4.5, 1.3).close(), { fill: "#333" });
+  const eraser = new Rectangle(16, -3.5, 4, 7, {
+    fill: ElectricFieldMapperColors.pencilEraserColorProperty,
+    stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
+    lineWidth: 1,
+  });
+  const tip = new Path(new Shape().moveTo(0, -3.5).lineTo(-7, 0).lineTo(0, 3.5).close(), {
+    fill: ElectricFieldMapperColors.pencilTipColorProperty,
+    stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
+    lineWidth: 1,
+  });
+  const lead = new Path(new Shape().moveTo(-4.5, -1.3).lineTo(-7, 0).lineTo(-4.5, 1.3).close(), {
+    fill: ElectricFieldMapperColors.pencilLeadColorProperty,
+  });
   return new Node({ children: [body, eraser, tip, lead], rotation: -Math.PI / 4 });
 }
 
 /** Static picture of the voltmeter for the toolbox. */
 export function createVoltmeterIcon(options?: NodeOptions): Node {
   const { node } = createCrosshair();
-  const body = createBody(new Rectangle(0, 0, BODY_WIDTH - 24, 22, 4, 4, { fill: "#ffffff", stroke: "#000000" }));
+  const body = createBody(
+    new Rectangle(0, 0, BODY_WIDTH - 24, 22, 4, 4, {
+      fill: ElectricFieldMapperColors.voltmeterReadoutBackgroundColorProperty,
+      stroke: ElectricFieldMapperColors.voltmeterReadoutTextColorProperty,
+    }),
+  );
   return new Node({ children: [node, body], ...options });
 }
 
@@ -104,17 +119,24 @@ export class VoltmeterNode extends Node {
       fill: ElectricFieldMapperColors.voltmeterTitleColorProperty,
       maxWidth: BODY_WIDTH - 16,
     });
-    const readout = new Text("", { font: "14px sans-serif", fill: "#000000", maxWidth: BODY_WIDTH - 32 });
-    const readoutBackground = new Rectangle(0, 0, BODY_WIDTH - 24, 22, 4, 4, { fill: "#ffffff", stroke: "#000000" });
+    const readout = new Text("", {
+      font: "14px sans-serif",
+      fill: ElectricFieldMapperColors.voltmeterReadoutTextColorProperty,
+      maxWidth: BODY_WIDTH - 32,
+    });
+    const readoutBackground = new Rectangle(0, 0, BODY_WIDTH - 24, 22, 4, 4, {
+      fill: ElectricFieldMapperColors.voltmeterReadoutBackgroundColorProperty,
+      stroke: ElectricFieldMapperColors.voltmeterReadoutTextColorProperty,
+    });
     const readoutBox = new Node({ children: [readoutBackground, readout] });
     const clearButton = new EraserButton({
-      baseColor: BUTTON_BASE_COLOR,
+      baseColor: ElectricFieldMapperColors.voltmeterButtonColorProperty,
       iconWidth: 20,
       accessibleName: a11y.controls.clearEquipotentialsStringProperty,
       listener: () => model.clearEquipotentials(),
     });
     const plotButton = new RectangularPushButton({
-      baseColor: BUTTON_BASE_COLOR,
+      baseColor: ElectricFieldMapperColors.voltmeterButtonColorProperty,
       content: createPencilIcon(),
       xMargin: 8,
       yMargin: 5,
@@ -178,7 +200,7 @@ export class VoltmeterNode extends Node {
     });
     dragHandle.addInputListener(
       new KeyboardListener({
-        keys: ["delete", "backspace"],
+        keyStringProperties: REMOVE_ITEM_HOTKEY_DATA.keyStringProperties,
         fire: () => {
           model.voltmeterActiveProperty.value = false;
         },

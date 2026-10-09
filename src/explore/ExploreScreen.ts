@@ -7,7 +7,7 @@
  *
  * Registered in the screens array in src/main.ts. Its home-screen and navigation-bar
  * icons come from createExploreIcon() in src/common/ElectricFieldMapperScreenIcons.ts
- * (see doc/multi-screen.md).
+ * (see doc/implementation-notes.md).
  */
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";

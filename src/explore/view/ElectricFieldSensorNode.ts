@@ -1,7 +1,8 @@
-import type { Vector2 } from "scenerystack/dot";
+import { toFixed, type Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, KeyboardListener, Node, type NodeOptions, RichDragListener, Text } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
+import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { FIELD_SENSOR_VIEW_RADIUS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -76,7 +77,7 @@ export class ElectricFieldSensorNode extends Node {
         arrow.visible = length > 1;
         arrow.setTailAndTip(0, 0, (length * e.x) / (magnitude || 1), (length * e.y) / (magnitude || 1));
         // Model y points down like the view; report the angle counterclockwise from +x as on paper.
-        const degrees = ((Math.atan2(-e.y, e.x) * 180) / Math.PI).toFixed(1);
+        const degrees = toFixed((Math.atan2(-e.y, e.x) * 180) / Math.PI, 1);
         strengthText.string = `${formatSignificant(magnitude)} V/m`;
         angleText.string = magnitude > 0 ? `${degrees}°` : "";
       }
@@ -122,7 +123,7 @@ export class ElectricFieldSensorNode extends Node {
     };
     this.dragListener.isPressedProperty.lazyLink(announceReading);
     const removeWithKeyboard = new KeyboardListener({
-      keys: ["delete", "backspace"],
+      keyStringProperties: REMOVE_ITEM_HOTKEY_DATA.keyStringProperties,
       fire: () => {
         this.interruptSubtreeInput();
         model.removeSensor(sensor);

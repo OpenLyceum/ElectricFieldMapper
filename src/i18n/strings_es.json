@@ -40,6 +40,15 @@
         "voltageMapHidden": "El mapa de voltaje está oculto.",
         "valuesShown": "Los valores numéricos están visibles.",
         "valuesHidden": "Los valores numéricos están ocultos."
+      },
+      "keyboardHelp": {
+        "heading": "Mover y retirar herramientas",
+        "move": "Mover",
+        "moveDescription": "Usa las flechas o W, A, S, D para mover cargas, sensores, el voltímetro o cualquiera de los extremos de la cinta métrica.",
+        "slower": "Mover más despacio (sin ajuste de cargas)",
+        "slowerDescription": "Mantén Mayús al mover para dar pasos más pequeños. Con el ajuste de cargas a la cuadrícula activado, las cargas siempre avanzan medio metro por paso.",
+        "remove": "Retirar o guardar",
+        "removeDescription": "Pulsa Supr o Retroceso sobre una carga o un sensor para retirarlo, o sobre el asa del voltímetro o un extremo de la cinta métrica para guardar la herramienta."
       }
     }
   },

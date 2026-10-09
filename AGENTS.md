@@ -9,6 +9,8 @@ This is a single-screen SceneryStack simulation. Follow the shared guidance in `
 - `src/explore/model/ChargePresets.ts` defines named charge arrangements. Selecting one clears drawn field and equipotential lines; manual charge edits select Custom. `GRID_SPACING_M` sets major grid lines and charge snapping; `GRID_MINOR_LINES_PER_MAJOR` sets the minor lines.
 - `src/explore/view/FieldCanvasNode.ts` paints the red/blue voltage map (`potentialColor.ts`, saturating at the voltage-scale preference; the default full scale is `POTENTIAL_SATURATION`), equipotentials (labelled when Values is on), the grid, automatic and drawn field lines (with optional arrowheads), field-zero markers, and sampled vector arrows. Field arrows point in the actual E direction. Their length is logarithmic by default, or direction-only, or clipped linear, from the arrow-length preference.
 - `src/common/ChargeRepresentationNode.ts` draws the shaded charge spheres. `src/explore/view/ChargeNode.ts` gives charges pointer and keyboard dragging. `ElectricFieldSensorNode.ts`, `VoltmeterNode.ts`, and scenery-phet's `MeasuringTapeNode` are the Charges-and-Fields-style measuring tools. `GridScaleNode.ts` draws the one-metre double arrow when Values and the grid are on. `ExploreScreenView.ts` lays out the board, charge/sensor box, tools box, controls, and reset. A half-scale scenery-phet `InfoButton` sits beside Reset All and opens a dialog on the exception to field lines ending at negative charges or infinity. As in Charges and Fields, the board has no frame: it follows `visibleBoundsProperty`, so a wider or taller window reveals more field and pushes the panel, hint, and reset button to the window edges.
+- `src/common/ElectricFieldMapperHotkeyData.ts` shares Delete/Backspace bindings with the keyboard-help dialog. Drag movement uses the framework arrow/WASD bindings; snapped charges move one 0.5 m square per step even with Shift held.
+- Pure physics/tracing constants are local to `FieldPhysics.ts`; visible bounds and initial tool positions are local to `ExploreModel.ts`. Rendering-specific constants stay with their views; shared grid and layout values are in `ElectricFieldMapperConstants.ts`.
 - `src/i18n/strings_*.json` holds English, Spanish, and French strings. All interactive controls must retain accessible names.
 
 ## Physics notes
@@ -28,8 +30,10 @@ The ideal point-charge field is singular at a charge. `CHARGE_RADIUS` masks that
 
 ## Validation
 
-Run `npm run lint && npm run check && npm run build && npm test` in this directory.
+Run `npm run lint && npm run check && npm run build && npm test` in this directory, then `npm run test:fuzz:quick`. Run sim-specific browser regressions with `npx playwright test tests/browser`. Persistent screen/model/tool nodes live for the simulation lifetime; dynamically removed charge and sensor nodes require full disposal. The memory-leak suite currently tests the dynamic model objects.
 
 ## Compliance carve-outs
 
 - **Template drift:** `prepare` guards on the local Git root. This new checkout currently has no writable member-repo `.git`, so an unguarded `npm install` would otherwise change the parent superproject hook setting.
+
+- **Computed colors:** `src/explore/view/potentialColor.ts` generates RGB/RGBA CSS by blending `ElectricFieldMapperColors` profile values; this is not an independent hardcoded palette.

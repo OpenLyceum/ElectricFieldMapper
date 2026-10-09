@@ -46,30 +46,16 @@ const stringProperties = LocalizedString.getNestedStringProperties({
 });
 
 /**
- * Explicit `a11y` shape exposed by {@link StringManager.getA11yStrings}.
- * Keep this in sync with the `a11y` key in `strings_en.json` — a locale key
- * rename that is not mirrored here fails at the getter return (not silently).
+ * Inferred `a11y` shape exposed by {@link StringManager.getExploreA11yStrings}.
+ * Derived from the localized property tree so names and nested groups cannot drift.
  */
-export type ElectricFieldMapperA11yStrings = {
-  readonly screenSummary: {
-    readonly playAreaStringProperty: ReadOnlyProperty<string>;
-    readonly controlAreaStringProperty: ReadOnlyProperty<string>;
-    readonly interactionHintStringProperty: ReadOnlyProperty<string>;
-  };
-  readonly currentDetailsStringProperty: ReadOnlyProperty<string>;
-  readonly controls: {
-    readonly exampleControlStringProperty: ReadOnlyProperty<string>;
-  };
-};
+export type ElectricFieldMapperA11yStrings = typeof stringProperties.a11y.explore;
 
 /**
- * Explicit Preferences → Simulation labels from {@link StringManager.getPreferences}.
- * Same sync rule as {@link ElectricFieldMapperA11yStrings}.
+ * Inferred Preferences → Simulation labels from {@link StringManager.getPreferences}.
+ * Derived from the same localized property tree as {@link ElectricFieldMapperA11yStrings}.
  */
-export type ElectricFieldMapperPreferenceStrings = {
-  readonly titleStringProperty: ReadOnlyProperty<string>;
-  readonly exampleToggleStringProperty: ReadOnlyProperty<string>;
-};
+export type ElectricFieldMapperPreferenceStrings = typeof stringProperties.preferences;
 
 /**
  * StringManager is a singleton that provides typed access to all localized
@@ -115,14 +101,14 @@ export class StringManager {
   }
 
   /** Accessibility strings for the Explore screen. */
-  public getExploreA11yStrings() {
+  public getExploreA11yStrings(): ElectricFieldMapperA11yStrings {
     return stringProperties.a11y.explore;
   }
 
   /**
    * Simulation-specific preference labels shown in Preferences → Simulation.
    */
-  public getPreferences() {
+  public getPreferences(): ElectricFieldMapperPreferenceStrings {
     return stringProperties.preferences;
   }
 }

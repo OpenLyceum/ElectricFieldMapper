@@ -64,6 +64,8 @@ export class FieldCanvasNode extends CanvasNode {
     ElectricFieldMapperColors.potentialPositiveColorProperty.link(this.repaint);
     ElectricFieldMapperColors.potentialNegativeColorProperty.link(this.repaint);
     ElectricFieldMapperColors.equipotentialLineColorProperty.link(this.repaint);
+    ElectricFieldMapperColors.equipotentialLabelBackgroundColorProperty.link(this.repaint);
+    ElectricFieldMapperColors.equipotentialLabelTextColorProperty.link(this.repaint);
     ElectricFieldMapperColors.fieldZeroColorProperty.link(this.repaint);
     ElectricFieldMapperColors.fieldZeroHaloColorProperty.link(this.repaint);
   }
@@ -216,9 +218,9 @@ export class FieldCanvasNode extends CanvasNode {
       const px = this.mvt.modelToViewX(seed.x);
       const py = this.mvt.modelToViewY(seed.y);
       const width = ctx.measureText(label).width + 8;
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillStyle = ElectricFieldMapperColors.equipotentialLabelBackgroundColorProperty.value.toCSS();
       ctx.fillRect(px - width / 2, py - 9, width, 18);
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = ElectricFieldMapperColors.equipotentialLabelTextColorProperty.value.toCSS();
       ctx.fillText(label, px, py);
     }
   }
@@ -350,6 +352,8 @@ export class FieldCanvasNode extends CanvasNode {
     ElectricFieldMapperColors.potentialPositiveColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.potentialNegativeColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.equipotentialLineColorProperty.unlink(this.repaint);
+    ElectricFieldMapperColors.equipotentialLabelBackgroundColorProperty.unlink(this.repaint);
+    ElectricFieldMapperColors.equipotentialLabelTextColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.fieldZeroColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.fieldZeroHaloColorProperty.unlink(this.repaint);
     super.dispose();

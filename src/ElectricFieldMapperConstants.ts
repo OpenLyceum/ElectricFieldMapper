@@ -1,10 +1,10 @@
 /**
  * ElectricFieldMapperConstants.ts
  *
- * Central repository for every named numeric constant used across the
- * simulation. Bare numbers that carry semantic meaning (sizes, margins,
- * physics defaults, ranges) belong here rather than inline in model or view
- * code, so they are named, documented, and changed in one place.
+ * Shared numeric constants used across the simulation. Local tracing, model,
+ * and rendering constants live beside their algorithms (see AGENTS.md).
+ * Name and document semantic sizes, margins, defaults, and ranges so they
+ * can be changed in one place.
  *
  * Conventions
  * ───────────
@@ -14,7 +14,6 @@
  *  - Colour strings live in ElectricFieldMapperColors.ts, not here.
  *  - Computed expressions (e.g. `2 * Math.PI`) may stay inline.
  *
- * Remove the example constants below and replace them with the sim's own.
  */
 
 import ElectricFieldMapperNamespace from "./ElectricFieldMapperNamespace.js";

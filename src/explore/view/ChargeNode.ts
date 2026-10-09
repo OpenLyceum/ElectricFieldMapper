@@ -2,6 +2,7 @@ import type { Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { KeyboardListener, Node, RichDragListener } from "scenerystack/scenery";
 import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
+import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
 import { GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ExploreModel, PointCharge } from "../model/ExploreModel.js";
@@ -67,8 +68,11 @@ export class ChargeNode extends Node {
     model.snapToGridProperty.link(updateKeyboardSteps);
     this.addInputListener(this.dragListener);
     const removeWithKeyboard = new KeyboardListener({
-      keys: ["delete", "backspace"],
-      fire: () => model.removeCharge(charge),
+      keyStringProperties: REMOVE_ITEM_HOTKEY_DATA.keyStringProperties,
+      fire: () => {
+        this.interruptSubtreeInput();
+        model.removeCharge(charge);
+      },
     });
     this.addInputListener(removeWithKeyboard);
     this.disposeEmitter.addListener(() => {

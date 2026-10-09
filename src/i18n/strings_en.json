@@ -40,6 +40,15 @@
         "voltageMapHidden": "Voltage map hidden.",
         "valuesShown": "Numeric values shown.",
         "valuesHidden": "Numeric values hidden."
+      },
+      "keyboardHelp": {
+        "heading": "Move and remove tools",
+        "move": "Move",
+        "moveDescription": "Use arrow keys or W, A, S, D to move charges, sensors, the voltmeter, or either end of the measuring tape.",
+        "slower": "Move slower (without charge snapping)",
+        "slowerDescription": "Hold Shift while moving for smaller steps. With Snap charges to grid on, charges always move one half-metre grid square per step.",
+        "remove": "Remove or put away",
+        "removeDescription": "Press Delete or Backspace on a charge or sensor to remove it, or on the voltmeter handle or either measuring tape end to put the tool away."
       }
     }
   },

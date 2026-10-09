@@ -207,6 +207,59 @@ const ElectricFieldMapperColors = {
     projector: "#ffffff",
   }),
 
+  equipotentialLabelBackgroundColorProperty: new ProfileColorProperty(
+    ElectricFieldMapperNamespace,
+    "equipotentialLabelBackground",
+    {
+      default: "rgba(0,0,0,0.5)",
+      projector: "rgba(255,255,255,0.85)",
+    },
+  ),
+  equipotentialLabelTextColorProperty: new ProfileColorProperty(
+    ElectricFieldMapperNamespace,
+    "equipotentialLabelText",
+    {
+      default: "#ffffff",
+      projector: "#000000",
+    },
+  ),
+  voltmeterButtonColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "voltmeterButton", {
+    default: "#f2f2f2",
+    projector: "#f2f2f2",
+  }),
+  voltmeterReadoutBackgroundColorProperty: new ProfileColorProperty(
+    ElectricFieldMapperNamespace,
+    "voltmeterReadoutBackground",
+    {
+      default: "#ffffff",
+      projector: "#ffffff",
+    },
+  ),
+  voltmeterReadoutTextColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "voltmeterReadoutText", {
+    default: "#000000",
+    projector: "#000000",
+  }),
+  pencilBodyColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "pencilBody", {
+    default: "#f5c542",
+    projector: "#f5c542",
+  }),
+  pencilOutlineColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "pencilOutline", {
+    default: "#6b5310",
+    projector: "#6b5310",
+  }),
+  pencilEraserColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "pencilEraser", {
+    default: "#e88a9a",
+    projector: "#e88a9a",
+  }),
+  pencilTipColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "pencilTip", {
+    default: "#e9c99a",
+    projector: "#e9c99a",
+  }),
+  pencilLeadColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "pencilLead", {
+    default: "#333333",
+    projector: "#333333",
+  }),
+
   // ── Light control surfaces ───────────────────────────────────────────────────
   // White chrome (combo boxes, flat push buttons, editable input fields) stays light
   // in both profiles; its text stays dark. Same values in default and projector mode,

@@ -25,6 +25,7 @@ import {
   LIGHT_SURFACE_TEXT_FILL,
 } from "../../common/ElectricFieldMapperButtonOptions.js";
 import { ELECTRIC_FIELD_MAPPER_CHECKBOX_OPTIONS } from "../../common/ElectricFieldMapperControlOptions.js";
+import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
 import { ElectricFieldMapperPanel } from "../../common/ElectricFieldMapperPanel.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import {
@@ -227,13 +228,14 @@ export class ExploreScreenView extends ScreenView {
       visit(node);
     };
     const putTapeAway = (): void => {
+      measuringTapeNode.interruptSubtreeInput();
       model.measuringTapeActiveProperty.value = false;
     };
     const addTapeDelete = (node: Node): void => {
       if (node.focusable) {
         node.addInputListener(
           new KeyboardListener({
-            keys: ["delete", "backspace"],
+            keyStringProperties: REMOVE_ITEM_HOTKEY_DATA.keyStringProperties,
             fire: putTapeAway,
           }),
         );

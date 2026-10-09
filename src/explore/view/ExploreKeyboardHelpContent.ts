@@ -1,31 +1,35 @@
-/**
- * ExploreKeyboardHelpContent.ts
- *
- * Content for the keyboard-help dialog (the "?" button in the navigation bar).
- * The template's only interactions are buttons and Reset All, so a single
- * basic-actions section covers the available keyboard controls. When the sim
- * grows, fill the right column (pattern stubbed below).
- */
-
 import {
   BasicActionsKeyboardHelpSection,
   ComboBoxKeyboardHelpSection,
-  // SliderControlsKeyboardHelpSection,
-  // TimeControlsKeyboardHelpSection,
+  KeyboardHelpIconFactory,
+  KeyboardHelpSection,
+  KeyboardHelpSectionRow,
   TwoColumnKeyboardHelpContent,
 } from "scenerystack/scenery-phet";
+import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
+import { StringManager } from "../../i18n/StringManager.js";
 
 export class ExploreKeyboardHelpContent extends TwoColumnKeyboardHelpContent {
   public constructor() {
-    const leftColumn = [new ComboBoxKeyboardHelpSection()];
-
-    // Right column — uncomment when the sim adds sliders and/or TimeControlNode:
-    // const rightColumn = [
-    //   new SliderControlsKeyboardHelpSection(),
-    //   // new TimeControlsKeyboardHelpSection(),
-    // ];
-    const rightColumn = [new BasicActionsKeyboardHelpSection({ withCheckboxContent: true })];
-
-    super(leftColumn, rightColumn);
+    const help = StringManager.getInstance().getExploreA11yStrings().keyboardHelp;
+    // RichDragListener owns the arrow/WASD bindings. Use the framework's standard drag icons.
+    const moveItems = new KeyboardHelpSection(help.headingStringProperty, [
+      KeyboardHelpSectionRow.labelWithIcon(help.moveStringProperty, KeyboardHelpIconFactory.arrowOrWasdKeysRowIcon(), {
+        labelInnerContent: help.moveDescriptionStringProperty,
+      }),
+      KeyboardHelpSectionRow.labelWithIconList(
+        help.slowerStringProperty,
+        [
+          KeyboardHelpIconFactory.shiftPlusIcon(KeyboardHelpIconFactory.arrowKeysRowIcon()),
+          KeyboardHelpIconFactory.shiftPlusIcon(KeyboardHelpIconFactory.wasdRowIcon()),
+        ],
+        { labelInnerContent: help.slowerDescriptionStringProperty },
+      ),
+      KeyboardHelpSectionRow.fromHotkeyData(REMOVE_ITEM_HOTKEY_DATA),
+    ]);
+    super(
+      [moveItems, new ComboBoxKeyboardHelpSection()],
+      [new BasicActionsKeyboardHelpSection({ withCheckboxContent: true })],
+    );
   }
 }
