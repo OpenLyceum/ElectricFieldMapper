@@ -2,8 +2,13 @@ import type { Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { KeyboardListener, Node, RichDragListener } from "scenerystack/scenery";
 import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
+import { GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ExploreModel, PointCharge } from "../model/ExploreModel.js";
+
+/** Keyboard movement per key press or repeat, in view pixels when snapping is off. */
+const KEYBOARD_DRAG_DELTA = 10;
+const SHIFT_KEYBOARD_DRAG_DELTA = 3;
 
 export class ChargeNode extends Node {
   public readonly dragListener: RichDragListener;
@@ -34,19 +39,32 @@ export class ChargeNode extends Node {
     this.dragListener = new RichDragListener({
       positionProperty: charge.positionProperty,
       transform: mvt,
-      mapPosition: (position) => (model.snapToGridProperty.value ? model.snapPosition(position) : position),
-      dragListenerOptions: { applyOffset: false },
-      keyboardDragListenerOptions: {
-        dragSpeed: 90,
-        shiftDragSpeed: 30,
-        dragBoundsProperty: model.keyboardDragBoundsProperty,
+      dragListenerOptions: {
+        applyOffset: false,
+        mapPosition: (position) => (model.snapToGridProperty.value ? model.snapPosition(position) : position),
+        end: (event) => {
+          if (event) {
+            onDrop(charge);
+          }
+        },
       },
-      end: (event) => {
-        if (event) {
-          onDrop(charge);
-        }
+      keyboardDragListenerOptions: {
+        dragDelta: KEYBOARD_DRAG_DELTA,
+        shiftDragDelta: SHIFT_KEYBOARD_DRAG_DELTA,
+        // A custom mapping must apply the bounds itself: mapPosition replaces dragBoundsProperty.
+        mapPosition: (position) => {
+          const bounded = model.keyboardDragBoundsProperty.value.closestPointTo(position);
+          return model.snapToGridProperty.value ? model.snapPosition(bounded) : bounded;
+        },
       },
     });
+    // Each snapped key press advances one whole grid square, including with Shift held.
+    const updateKeyboardSteps = (snap: boolean): void => {
+      const gridStep = Math.abs(mvt.modelToViewDeltaX(GRID_SPACING_M));
+      this.dragListener.keyboardDragListener.dragDelta = snap ? gridStep : KEYBOARD_DRAG_DELTA;
+      this.dragListener.keyboardDragListener.shiftDragDelta = snap ? gridStep : SHIFT_KEYBOARD_DRAG_DELTA;
+    };
+    model.snapToGridProperty.link(updateKeyboardSteps);
     this.addInputListener(this.dragListener);
     const removeWithKeyboard = new KeyboardListener({
       keys: ["delete", "backspace"],
@@ -55,6 +73,7 @@ export class ChargeNode extends Node {
     this.addInputListener(removeWithKeyboard);
     this.disposeEmitter.addListener(() => {
       charge.positionProperty.unlink(update);
+      model.snapToGridProperty.unlink(updateKeyboardSteps);
       this.removeInputListener(this.dragListener);
       this.dragListener.dispose();
       this.removeInputListener(removeWithKeyboard);

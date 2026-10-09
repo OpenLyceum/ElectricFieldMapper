@@ -10,7 +10,7 @@
         "controlArea": "Arrastra cargas y sensores de campo de la caja al tablero, o devuélvelos para quitarlos. Arrastra el voltímetro o la cinta métrica desde las herramientas. Cambia las capas y dibuja líneas.",
         "interactionHint": "Arrastra una carga o un sensor de la caja al tablero. Devuélvelo a la caja para quitarlo. Arrastra el voltímetro o la cinta métrica desde Herramientas. Activa Tocar para dibujar y toca el tablero."
       },
-      "currentDetails": "Las cargas están listas. Los sensores, el voltímetro y la cinta métrica están guardados.",
+      "currentDetails": "{{chargeCount}} cargas. {{sensorCount}} sensores de campo eléctrico. {{voltmeterState}} {{measuringTapeState}} {{voltageMapState}} {{valuesState}} {{fieldLineCount}} líneas de campo dibujadas. {{equipotentialCount}} líneas equipotenciales.",
       "controls": {
         "playArea": "Tablero de campo. Al activar Tocar para dibujar, toca para colocar una línea de campo.",
         "positiveCharge": "Carga positiva de un nanoculombio",
@@ -30,6 +30,16 @@
         "chargePresets": "Configuraciones de cargas",
         "info": "Dónde terminan las líneas de campo",
         "reset": "Restablecer todo"
+      },
+      "detailStates": {
+        "voltmeterOnBoard": "El voltímetro está en el tablero.",
+        "voltmeterInToolbox": "El voltímetro está en la caja de herramientas.",
+        "measuringTapeOnBoard": "La cinta métrica está en el tablero.",
+        "measuringTapeInToolbox": "La cinta métrica está en la caja de herramientas.",
+        "voltageMapShown": "El mapa de voltaje está visible.",
+        "voltageMapHidden": "El mapa de voltaje está oculto.",
+        "valuesShown": "Los valores numéricos están visibles.",
+        "valuesHidden": "Los valores numéricos están ocultos."
       }
     }
   },
@@ -78,6 +88,6 @@
     "centimeterUnit": "cm",
     "oneMeter": "1 metro",
     "infoTitle": "Dónde terminan las líneas de campo",
-    "infoBody": "Las líneas de campo suelen salir de una carga positiva y terminar en una carga negativa, o bien alejarse hasta el infinito. Eso no siempre ocurre aquí. Elige <b>Cuadrado de cargas positivas</b>: cuatro cargas positivas están en las esquinas, y las líneas de las cuatro se unen en el centro. Ninguna termina en una carga negativa ni continúa hasta el infinito. Ese punto de encuentro es una anomalía de este dibujo plano. En tres dimensiones, esas líneas saldrían del plano por la tercera dimensión en lugar de terminar juntas, y una vista bidimensional no puede mostrar esa salida."
+    "infoBody": "Las líneas de campo eléctrico suelen salir de cargas positivas y terminar en cargas negativas o extenderse hasta el infinito. Esta regla tiene excepciones. Elige <b>Cuadrado de cargas positivas</b>: algunas líneas de campo se acercan al centro del cuadrado. Allí, los campos de las cuatro cargas se cancelan exactamente y el campo eléctrico es cero. Estas líneas terminan en ese punto de campo nulo, donde el campo no tiene dirección, en lugar de terminar en una carga negativa o en el infinito."
   }
 }

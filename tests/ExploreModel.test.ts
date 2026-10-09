@@ -1,4 +1,4 @@
-import { Vector2 } from "scenerystack/dot";
+import { Bounds2, Vector2 } from "scenerystack/dot";
 import { describe, expect, it } from "vitest";
 import { ExploreModel } from "../src/explore/model/ExploreModel.js";
 
@@ -66,6 +66,15 @@ describe("ExploreModel tools", () => {
       { x: 1, y: -0.5, q: -1 },
     ]);
     expect(model.isNearCharge({ x: 0.5, y: -0.5 })).toBe(true);
+  });
+
+  it("keeps snapped edge positions on grid points when visible bounds are between grid lines", () => {
+    const model = new ExploreModel();
+    model.fieldBoundsProperty.value = new Bounds2(-4.13, -3.27, 5.42, 3.19);
+    expect(model.snapPosition({ x: -4, y: -3 })).toEqual(new Vector2(-3.5, -2.5));
+    expect(model.snapPosition({ x: 5.3, y: 3.1 })).toEqual(new Vector2(4.5, 2.5));
+    // Charges can still follow the pointer outside the field to reach the toolbox.
+    expect(model.snapPosition({ x: -5, y: 4 })).toEqual(new Vector2(-5, 4));
   });
 
   it("snaps the measuring tape to minor grid lines only while the grid is shown", () => {

@@ -198,9 +198,10 @@ export class ExploreModel implements TModel {
   public snapPosition(point: Point): Vector2 {
     const snap = (value: number, min: number, max: number) => {
       const rounded = Math.round(value / GRID_SPACING_M) * GRID_SPACING_M;
-      return value >= min && value <= max
-        ? Math.max(min + GRID_SPACING_M, Math.min(max - GRID_SPACING_M, rounded))
-        : rounded;
+      // Visible edges need not lie on the grid. Clamp to whole grid points inside the margin.
+      const firstGridPoint = Math.ceil((min + GRID_SPACING_M) / GRID_SPACING_M) * GRID_SPACING_M;
+      const lastGridPoint = Math.floor((max - GRID_SPACING_M) / GRID_SPACING_M) * GRID_SPACING_M;
+      return value >= min && value <= max ? Math.max(firstGridPoint, Math.min(lastGridPoint, rounded)) : rounded;
     };
     const bounds = this.fieldBoundsProperty.value;
     return new Vector2(snap(point.x, bounds.minX, bounds.maxX), snap(point.y, bounds.minY, bounds.maxY));

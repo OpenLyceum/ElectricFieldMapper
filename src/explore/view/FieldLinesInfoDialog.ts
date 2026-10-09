@@ -1,7 +1,7 @@
 /**
  * FieldLinesInfoDialog.ts
  *
- * Explains the anomalous meeting of field lines for a square of positive charges.
+ * Explains why some field lines end at a zero-field point instead of a negative charge or infinity.
  */
 
 import { DerivedProperty } from "scenerystack/axon";

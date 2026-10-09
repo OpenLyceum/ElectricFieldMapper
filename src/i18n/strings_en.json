@@ -10,7 +10,7 @@
         "controlArea": "Drag charges and electric field sensors from the box onto the board, or back to the box to remove them. Drag the voltmeter or the measuring tape from the toolbox. Change the overlays and draw field lines.",
         "interactionHint": "Drag a charge or sensor from the box onto the board. Drag it back to the box to remove it. Drag the voltmeter or measuring tape from Tools. Turn on Tap to draw, then tap the board to place field lines."
       },
-      "currentDetails": "Charges are ready. Field sensors, the voltmeter, and the measuring tape are in their boxes.",
+      "currentDetails": "{{chargeCount}} charges. {{sensorCount}} electric field sensors. {{voltmeterState}} {{measuringTapeState}} {{voltageMapState}} {{valuesState}} {{fieldLineCount}} drawn field lines. {{equipotentialCount}} equipotential lines.",
       "controls": {
         "playArea": "Field board. When Tap to draw is selected, tap to place a field line.",
         "positiveCharge": "Positive one nanocoulomb charge",
@@ -30,6 +30,16 @@
         "chargePresets": "Charge configurations",
         "info": "Where field lines end",
         "reset": "Reset all"
+      },
+      "detailStates": {
+        "voltmeterOnBoard": "Voltmeter on the board.",
+        "voltmeterInToolbox": "Voltmeter in the toolbox.",
+        "measuringTapeOnBoard": "Measuring tape on the board.",
+        "measuringTapeInToolbox": "Measuring tape in the toolbox.",
+        "voltageMapShown": "Voltage map shown.",
+        "voltageMapHidden": "Voltage map hidden.",
+        "valuesShown": "Numeric values shown.",
+        "valuesHidden": "Numeric values hidden."
       }
     }
   },
@@ -78,6 +88,6 @@
     "centimeterUnit": "cm",
     "oneMeter": "1 meter",
     "infoTitle": "Where field lines end",
-    "infoBody": "Field lines usually start on a positive charge and end on a negative charge, or they run out to infinity. That does not always happen here. Choose <b>Square of positive charges</b>: four positive charges sit at the corners, and the lines from all four merge in the middle. None of them ends on a negative charge or continues to infinity. That meeting point is an anomaly of this flat drawing. In three dimensions those lines would leave the plane through the third dimension instead of ending together, and a two-dimensional view cannot show that escape."
+    "infoBody": "Electric field lines usually start on positive charges and end on negative charges or extend to infinity. This rule has exceptions. Choose <b>Square of positive charges</b>: some field lines approach the center of the square. There, the fields from the four charges cancel exactly, making the electric field zero. These lines end at this zero-field point, where the field has no direction, rather than at a negative charge or infinity."
   }
 }

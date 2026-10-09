@@ -10,7 +10,7 @@
         "controlArea": "Glissez charges et capteurs de champ de la boîte vers la zone, ou ramenez-les pour les retirer. Glissez le voltmètre ou le ruban à mesurer depuis les outils. Changez les affichages et tracez des lignes.",
         "interactionHint": "Glissez une charge ou un capteur de la boîte vers la zone. Ramenez-le dans la boîte pour le retirer. Glissez le voltmètre ou le ruban à mesurer depuis Outils. Activez le tracé puis touchez la zone."
       },
-      "currentDetails": "Les charges sont prêtes. Les capteurs, le voltmètre et le ruban à mesurer sont rangés.",
+      "currentDetails": "{{chargeCount}} charges. {{sensorCount}} capteurs de champ électrique. {{voltmeterState}} {{measuringTapeState}} {{voltageMapState}} {{valuesState}} {{fieldLineCount}} lignes de champ tracées. {{equipotentialCount}} lignes équipotentielles.",
       "controls": {
         "playArea": "Zone du champ. Quand le tracé est activé, touchez pour placer une ligne.",
         "positiveCharge": "Charge positive de un nanocoulomb",
@@ -30,6 +30,16 @@
         "chargePresets": "Configurations de charges",
         "info": "Où finissent les lignes de champ",
         "reset": "Tout réinitialiser"
+      },
+      "detailStates": {
+        "voltmeterOnBoard": "Le voltmètre est dans la zone du champ.",
+        "voltmeterInToolbox": "Le voltmètre est dans la boîte à outils.",
+        "measuringTapeOnBoard": "Le ruban à mesurer est dans la zone du champ.",
+        "measuringTapeInToolbox": "Le ruban à mesurer est dans la boîte à outils.",
+        "voltageMapShown": "La carte de tension est affichée.",
+        "voltageMapHidden": "La carte de tension est masquée.",
+        "valuesShown": "Les valeurs numériques sont affichées.",
+        "valuesHidden": "Les valeurs numériques sont masquées."
       }
     }
   },
@@ -78,6 +88,6 @@
     "centimeterUnit": "cm",
     "oneMeter": "1 mètre",
     "infoTitle": "Où finissent les lignes de champ",
-    "infoBody": "Les lignes de champ partent d’habitude d’une charge positive et finissent sur une charge négative, ou bien elles s’éloignent à l’infini. Ce n’est pas toujours le cas ici. Choisis <b>Carré de charges positives</b> : quatre charges positives occupent les coins, et les lignes des quatre se rejoignent au centre. Aucune ne finit sur une charge négative ni ne continue à l’infini. Ce point de rencontre est une anomalie de ce dessin plat. En trois dimensions, ces lignes quitteraient le plan par la troisième dimension au lieu de finir ensemble, et une vue à deux dimensions ne peut pas montrer cette sortie."
+    "infoBody": "Les lignes de champ électrique partent généralement de charges positives et se terminent sur des charges négatives ou s’étendent à l’infini. Cette règle a des exceptions. Choisis <b>Carré de charges positives</b> : certaines lignes de champ s’approchent du centre du carré. Là, les champs des quatre charges se compensent exactement et le champ électrique est nul. Ces lignes se terminent en ce point de champ nul, où le champ n’a pas de direction, plutôt que sur une charge négative ou à l’infini."
   }
 }
