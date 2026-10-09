@@ -4,14 +4,18 @@ import { CanvasNode } from "scenerystack/scenery";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
+import { asArrowScale, asVoltageScale } from "../model/FieldDisplayOptions.js";
 import {
   automaticFieldLines,
   electricField,
   electricPotential,
+  findFieldZeros,
   type Point,
+  potentialSaturation,
   traceEquipotential,
   traceFieldLine,
 } from "../model/FieldPhysics.js";
+import { arrowDisplay } from "./arrowDisplay.js";
 import { formatSignificant } from "./formatReadout.js";
 import { potentialRGB } from "./potentialColor.js";
 
@@ -46,7 +50,11 @@ export class FieldCanvasNode extends CanvasNode {
     model.showLinesProperty.link(this.repaint);
     model.showGridProperty.link(this.repaint);
     model.automaticLinesProperty.link(this.repaint);
-    model.denseFieldLinesProperty.link(this.repaint);
+    model.linesPerNanocoulombProperty.link(this.repaint);
+    model.voltageScaleProperty.link(this.repaint);
+    model.arrowScaleProperty.link(this.repaint);
+    model.fieldLineArrowheadsProperty.link(this.repaint);
+    model.showFieldZerosProperty.link(this.repaint);
     ElectricFieldMapperColors.gridColorProperty.link(this.repaint);
     ElectricFieldMapperColors.fieldArrowColorProperty.link(this.repaint);
     ElectricFieldMapperColors.fieldLineColorProperty.link(this.repaint);
@@ -56,6 +64,8 @@ export class FieldCanvasNode extends CanvasNode {
     ElectricFieldMapperColors.potentialPositiveColorProperty.link(this.repaint);
     ElectricFieldMapperColors.potentialNegativeColorProperty.link(this.repaint);
     ElectricFieldMapperColors.equipotentialLineColorProperty.link(this.repaint);
+    ElectricFieldMapperColors.fieldZeroColorProperty.link(this.repaint);
+    ElectricFieldMapperColors.fieldZeroHaloColorProperty.link(this.repaint);
   }
 
   public override paintCanvas(ctx: CanvasRenderingContext2D): void {
@@ -86,12 +96,16 @@ export class FieldCanvasNode extends CanvasNode {
     if (this.model.showVectorsProperty.value) {
       this.drawVectors(ctx, charges, bounds);
     }
+
+    if (this.model.showFieldZerosProperty.value && charges.length > 0) {
+      this.drawFieldZeros(ctx, charges, bounds);
+    }
     ctx.restore();
   }
 
   private drawFieldLines(ctx: CanvasRenderingContext2D, charges: Charges, bounds: Bounds2): void {
     const lines = this.model.automaticLinesProperty.value
-      ? automaticFieldLines(charges, bounds, this.model.denseFieldLinesProperty.value ? 20 : 12)
+      ? automaticFieldLines(charges, bounds, this.model.linesPerNanocoulombProperty.value)
       : [];
     for (const seed of this.model.seedPoints) {
       lines.push(traceFieldLine(charges, seed, bounds));
@@ -99,8 +113,9 @@ export class FieldCanvasNode extends CanvasNode {
     ctx.strokeStyle = ElectricFieldMapperColors.fieldLineColorProperty.value.toCSS();
     ctx.fillStyle = ctx.strokeStyle;
     ctx.lineWidth = 1.8;
+    const arrowheads = this.model.fieldLineArrowheadsProperty.value;
     for (const line of lines) {
-      this.drawLine(ctx, line);
+      this.drawLine(ctx, line, arrowheads);
     }
   }
 
@@ -119,10 +134,9 @@ export class FieldCanvasNode extends CanvasNode {
         if (!Number.isFinite(magnitude) || magnitude < 0.05) {
           continue;
         }
-        const opacity = Math.min(0.95, Math.max(0.2, Math.log1p(magnitude) / 4));
-        ctx.globalAlpha = opacity;
-        const length = 4 + 12 * Math.min(1, Math.log1p(magnitude) / 4);
-        this.arrow(ctx, mvt.modelToViewX(x), mvt.modelToViewY(y), e.x / magnitude, e.y / magnitude, length);
+        const display = arrowDisplay(magnitude, asArrowScale(this.model.arrowScaleProperty.value));
+        ctx.globalAlpha = display.opacity;
+        this.arrow(ctx, mvt.modelToViewX(x), mvt.modelToViewY(y), e.x / magnitude, e.y / magnitude, display.length);
       }
     }
     ctx.globalAlpha = 1;
@@ -149,12 +163,13 @@ export class FieldCanvasNode extends CanvasNode {
     const zero = ElectricFieldMapperColors.playAreaColorProperty.value;
     const positive = ElectricFieldMapperColors.potentialPositiveColorProperty.value;
     const negative = ElectricFieldMapperColors.potentialNegativeColorProperty.value;
+    const saturation = potentialSaturation(asVoltageScale(this.model.voltageScaleProperty.value), charges, bounds);
     for (let row = 0; row < rows; row++) {
       // The board transform does not flip y, so image rows and model y both run downward.
       const y = bounds.minY + (row + 0.5) * VOLTAGE_CELL;
       for (let column = 0; column < columns; column++) {
         const x = bounds.minX + (column + 0.5) * VOLTAGE_CELL;
-        const [r, g, b] = potentialRGB(electricPotential(charges, { x, y }), zero, positive, negative);
+        const [r, g, b] = potentialRGB(electricPotential(charges, { x, y }), zero, positive, negative, saturation);
         const offset = 4 * (row * columns + column);
         image.data[offset] = r;
         image.data[offset + 1] = g;
@@ -242,7 +257,7 @@ export class FieldCanvasNode extends CanvasNode {
     ctx.globalAlpha = 1;
   }
 
-  private drawLine(ctx: CanvasRenderingContext2D, line: Point[]): void {
+  private drawLine(ctx: CanvasRenderingContext2D, line: Point[], arrowheads: boolean): void {
     if (line.length < 2) {
       return;
     }
@@ -262,7 +277,8 @@ export class FieldCanvasNode extends CanvasNode {
       const segment = Math.hypot(b.x - a.x, b.y - a.y);
       ctx.lineTo(this.mvt.modelToViewX(b.x), this.mvt.modelToViewY(b.y));
       accumulated += segment;
-      if (accumulated >= 0.65 && segment > 0) {
+      // Arrowheads follow the trace, which runs in the direction of E, about every 0.65 m.
+      if (arrowheads && accumulated >= 0.65 && segment > 0) {
         ctx.stroke();
         const px = this.mvt.modelToViewX(b.x);
         const py = this.mvt.modelToViewY(b.y);
@@ -273,6 +289,27 @@ export class FieldCanvasNode extends CanvasNode {
       }
     }
     ctx.stroke();
+  }
+
+  private drawFieldZeros(ctx: CanvasRenderingContext2D, charges: Charges, bounds: Bounds2): void {
+    const color = ElectricFieldMapperColors.fieldZeroColorProperty.value.toCSS();
+    const halo = ElectricFieldMapperColors.fieldZeroHaloColorProperty.value.toCSS();
+    for (const zero of findFieldZeros(charges, bounds)) {
+      const x = this.mvt.modelToViewX(zero.x);
+      const y = this.mvt.modelToViewY(zero.y);
+      ctx.beginPath();
+      ctx.arc(x, y, 6.5, 0, 2 * Math.PI);
+      ctx.lineWidth = 3.2;
+      ctx.strokeStyle = halo;
+      ctx.stroke();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
   }
 
   private arrow(ctx: CanvasRenderingContext2D, x: number, y: number, dx: number, dy: number, length: number): void {
@@ -299,7 +336,11 @@ export class FieldCanvasNode extends CanvasNode {
     this.model.showLinesProperty.unlink(this.repaint);
     this.model.showGridProperty.unlink(this.repaint);
     this.model.automaticLinesProperty.unlink(this.repaint);
-    this.model.denseFieldLinesProperty.unlink(this.repaint);
+    this.model.linesPerNanocoulombProperty.unlink(this.repaint);
+    this.model.voltageScaleProperty.unlink(this.repaint);
+    this.model.arrowScaleProperty.unlink(this.repaint);
+    this.model.fieldLineArrowheadsProperty.unlink(this.repaint);
+    this.model.showFieldZerosProperty.unlink(this.repaint);
     ElectricFieldMapperColors.gridColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.fieldArrowColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.fieldLineColorProperty.unlink(this.repaint);
@@ -309,6 +350,8 @@ export class FieldCanvasNode extends CanvasNode {
     ElectricFieldMapperColors.potentialPositiveColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.potentialNegativeColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.equipotentialLineColorProperty.unlink(this.repaint);
+    ElectricFieldMapperColors.fieldZeroColorProperty.unlink(this.repaint);
+    ElectricFieldMapperColors.fieldZeroHaloColorProperty.unlink(this.repaint);
     super.dispose();
   }
 }

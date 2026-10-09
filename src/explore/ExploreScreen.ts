@@ -27,7 +27,7 @@ export class ExploreScreen extends Screen<ExploreModel, ExploreScreenView> {
   public constructor(options: ExploreScreenOptions, preferences: ElectricFieldMapperPreferencesModel) {
     super(
       // Model factory — called once when the screen is first shown
-      () => new ExploreModel(preferences.denseFieldLinesProperty),
+      () => new ExploreModel(preferences.fieldDisplay),
       // View factory — receives the model instance
       (model) =>
         new ExploreScreenView(model, {

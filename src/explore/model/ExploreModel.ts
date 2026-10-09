@@ -5,6 +5,7 @@ import {
   NumberProperty,
   type ObservableArray,
   Property,
+  StringProperty,
   type TReadOnlyProperty,
 } from "scenerystack/axon";
 import { Bounds2, Vector2, Vector2Property } from "scenerystack/dot";
@@ -12,6 +13,7 @@ import type { TModel } from "scenerystack/joist";
 import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import electricFieldMapperQueryParameters from "../../preferences/electricFieldMapperQueryParameters.js";
 import { CHARGE_PRESETS, type ChargePreset, isChargePreset } from "./ChargePresets.js";
+import type { FieldDisplayPreferences } from "./FieldDisplayOptions.js";
 import { CHARGE_RADIUS, combineCoincidentCharges, type FieldBounds, type Point } from "./FieldPhysics.js";
 
 /** Opening checkbox and configuration state. Omitted fields use the page query parameters. */
@@ -99,7 +101,11 @@ export class ExploreModel implements TModel {
   public readonly snapToGridProperty: BooleanProperty;
   public readonly presetProperty: Property<ChargePreset>;
   public readonly drawModeProperty: BooleanProperty;
-  public readonly denseFieldLinesProperty: BooleanProperty;
+  public readonly linesPerNanocoulombProperty: TReadOnlyProperty<number>;
+  public readonly voltageScaleProperty: TReadOnlyProperty<string>;
+  public readonly arrowScaleProperty: TReadOnlyProperty<string>;
+  public readonly fieldLineArrowheadsProperty: TReadOnlyProperty<boolean>;
+  public readonly showFieldZerosProperty: TReadOnlyProperty<boolean>;
   public readonly automaticLinesProperty: BooleanProperty;
   /** True while the voltmeter is out of its toolbox and on the board. */
   public readonly voltmeterActiveProperty = new BooleanProperty(false);
@@ -128,9 +134,13 @@ export class ExploreModel implements TModel {
   /** Configuration restored by Reset All. Matches the query parameter when the page was opened. */
   private readonly initialPreset: ChargePreset;
 
-  public constructor(denseFieldLinesProperty = new BooleanProperty(false), launch: Partial<ExploreLaunchOptions> = {}) {
+  public constructor(display: Partial<FieldDisplayPreferences> = {}, launch: Partial<ExploreLaunchOptions> = {}) {
     const initial = { ...launchFromQuery(), ...launch };
-    this.denseFieldLinesProperty = denseFieldLinesProperty;
+    this.linesPerNanocoulombProperty = display.linesPerNanocoulombProperty ?? new NumberProperty(12);
+    this.voltageScaleProperty = display.voltageScaleProperty ?? new StringProperty("40");
+    this.arrowScaleProperty = display.arrowScaleProperty ?? new StringProperty("compressed");
+    this.fieldLineArrowheadsProperty = display.fieldLineArrowheadsProperty ?? new BooleanProperty(true);
+    this.showFieldZerosProperty = display.showFieldZerosProperty ?? new BooleanProperty(false);
     this.showVectorsProperty = new BooleanProperty(initial.showVectors);
     this.showLinesProperty = new BooleanProperty(initial.showLines);
     this.showVoltageProperty = new BooleanProperty(initial.showVoltage);

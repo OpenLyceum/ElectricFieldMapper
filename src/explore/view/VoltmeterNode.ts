@@ -19,7 +19,8 @@ import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { VOLTMETER_CROSSHAIR_RADIUS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
-import { electricPotential } from "../model/FieldPhysics.js";
+import { asVoltageScale } from "../model/FieldDisplayOptions.js";
+import { electricPotential, potentialSaturation } from "../model/FieldPhysics.js";
 import { formatSignificant } from "./formatReadout.js";
 import { potentialCSS } from "./potentialColor.js";
 
@@ -131,14 +132,22 @@ export class VoltmeterNode extends Node {
     const update = (): void => {
       const position = model.voltmeterPositionProperty.value;
       this.translation = mvt.modelToViewPosition(position);
-      const potential = electricPotential(model.getSnapshot(), position);
+      const charges = model.getSnapshot();
+      const potential = electricPotential(charges, position);
       readout.string = `${formatSignificant(potential)} V`;
       readout.center = readoutBackground.center;
-      ring.fill = potentialCSS(potential, 0.5);
+      const saturation = potentialSaturation(
+        asVoltageScale(model.voltageScaleProperty.value),
+        charges,
+        model.fieldBoundsProperty.value,
+      );
+      ring.fill = potentialCSS(potential, 0.5, saturation);
       plotButton.enabled = model.charges.length > 0;
     };
     model.voltmeterPositionProperty.link(update);
     model.changeCountProperty.lazyLink(update);
+    model.voltageScaleProperty.link(update);
+    model.fieldBoundsProperty.link(update);
     ElectricFieldMapperColors.playAreaColorProperty.lazyLink(update);
     ElectricFieldMapperColors.potentialPositiveColorProperty.lazyLink(update);
     ElectricFieldMapperColors.potentialNegativeColorProperty.lazyLink(update);

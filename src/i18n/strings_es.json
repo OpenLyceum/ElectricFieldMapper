@@ -45,7 +45,18 @@
   },
   "preferences": {
     "title": "Simulación",
-    "denseFieldLines": "Más líneas de campo automáticas"
+    "voltageScale": "Escala de color del voltaje",
+    "voltageScale10": "±10 V",
+    "voltageScale40": "±40 V",
+    "voltageScale200": "±200 V",
+    "voltageScaleAuto": "Automática",
+    "arrowScale": "Longitud de las flechas",
+    "arrowScaleDirection": "Solo la dirección",
+    "arrowScaleCompressed": "Comprimida",
+    "arrowScaleLinear": "Lineal, con tope",
+    "fieldLineArrowheads": "Puntas en las líneas de campo",
+    "linesPerNanocoulomb": "Líneas por nanoculombio",
+    "showFieldZeros": "Marcar los ceros del campo"
   },
   "ui": {
     "charges": "Cargas",

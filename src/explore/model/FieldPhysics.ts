@@ -1,3 +1,5 @@
+import type { VoltageScale } from "./FieldDisplayOptions.js";
+
 /** Coulomb field and adaptive field-line tracing. Coordinates are metres, charges nC. */
 export type Point = { x: number; y: number };
 export type Charge = Point & { q: number };
@@ -406,13 +408,227 @@ export function traceEquipotential(sourceCharges: readonly Charge[], seed: Point
   return [...backward, seed, ...forward.points];
 }
 
-/** Potential (V) at which the voltage map reaches full red or blue. */
+/** Potential (V) at which the voltage map reaches full red or blue by default. */
 export const POTENTIAL_SATURATION = 40;
 
+/** Coarse spacing used to choose an automatic voltage scale from the visible board. */
+const AUTO_SATURATION_SAMPLE_M = 0.25;
+
+/** Share of board samples allowed to sit at full red or blue under the automatic scale. */
+const AUTO_SATURATION_PERCENTILE = 0.9;
+
+const AUTO_SATURATION_MIN = 5;
+const AUTO_SATURATION_MAX = 500;
+
+/**
+ * Full-scale potential (V) for the voltage map. Fixed choices are ±10, ±40, and ±200 V.
+ * Automatic uses the 90th percentile of |V| on the visible board, so a sparse arrangement
+ * is not painted gray and a crowded one is not painted solid red or blue. Samples inside
+ * charge disks are omitted.
+ */
+export function potentialSaturation(scale: VoltageScale, charges: readonly Charge[], bounds: FieldBounds): number {
+  if (scale !== "auto") {
+    return Number(scale);
+  }
+  const combined = combineCoincidentCharges(charges);
+  if (combined.length === 0) {
+    return POTENTIAL_SATURATION;
+  }
+  const magnitudes: number[] = [];
+  const x0 = bounds.minX + AUTO_SATURATION_SAMPLE_M / 2;
+  const y0 = bounds.minY + AUTO_SATURATION_SAMPLE_M / 2;
+  for (let y = y0; y < bounds.maxY; y += AUTO_SATURATION_SAMPLE_M) {
+    for (let x = x0; x < bounds.maxX; x += AUTO_SATURATION_SAMPLE_M) {
+      const potential = electricPotentialFromCharges(combined, { x, y });
+      if (Number.isFinite(potential)) {
+        magnitudes.push(Math.abs(potential));
+      }
+    }
+  }
+  if (magnitudes.length === 0) {
+    return POTENTIAL_SATURATION;
+  }
+  magnitudes.sort((a, b) => a - b);
+  const index = Math.min(magnitudes.length - 1, Math.floor(AUTO_SATURATION_PERCENTILE * (magnitudes.length - 1)));
+  const sample = magnitudes[index] ?? POTENTIAL_SATURATION;
+  return Math.min(AUTO_SATURATION_MAX, Math.max(AUTO_SATURATION_MIN, sample));
+}
+
 /** Signed potential mapped to [−1, 1] for the red/blue voltage colouring. */
-export function potentialColorFraction(potential: number): number {
-  if (Number.isNaN(potential)) {
+export function potentialColorFraction(potential: number, saturation = POTENTIAL_SATURATION): number {
+  if (Number.isNaN(potential) || !(saturation > 0)) {
     return 0;
   }
-  return Math.max(-1, Math.min(1, potential / POTENTIAL_SATURATION));
+  return Math.max(-1, Math.min(1, potential / saturation));
+}
+
+/** Grid spacing for the field-zero search (metres). */
+const FIELD_ZERO_GRID_M = 0.5;
+
+/** A refined point counts as a zero when |E| is below this (V/m). */
+const FIELD_ZERO_RESIDUAL = 1e-4;
+
+/** Zeros closer than this are the same point (metres). */
+const FIELD_ZERO_MERGE_M = 0.25;
+
+const FIELD_ZERO_MAX_STEP_M = 0.6;
+const FIELD_ZERO_MAX_TRAVEL_M = 1.25;
+
+type FieldSample = { ex: number; ey: number; xx: number; xy: number; yy: number };
+
+/** Electric field and its Jacobian, or null inside a charge disk where E is undefined. */
+function fieldSample(charges: readonly Charge[], p: Point): FieldSample | null {
+  let ex = 0;
+  let ey = 0;
+  let xx = 0;
+  let xy = 0;
+  let yy = 0;
+  for (const charge of charges) {
+    const dx = p.x - charge.x;
+    const dy = p.y - charge.y;
+    const r2 = dx * dx + dy * dy;
+    if (r2 < CHARGE_RADIUS * CHARGE_RADIUS) {
+      return null;
+    }
+    const r = Math.sqrt(r2);
+    const eScale = (K_NC * charge.q) / (r2 * r);
+    ex += dx * eScale;
+    ey += dy * eScale;
+    const jScale = (K_NC * charge.q) / (r2 * r2 * r);
+    xx += jScale * (r2 - 3 * dx * dx);
+    xy -= jScale * 3 * dx * dy;
+    yy += jScale * (r2 - 3 * dy * dy);
+  }
+  return { ex, ey, xx, xy, yy };
+}
+
+function insideFieldBounds(point: Point, bounds: FieldBounds): boolean {
+  return point.x >= bounds.minX && point.x <= bounds.maxX && point.y >= bounds.minY && point.y <= bounds.maxY;
+}
+
+/** One Newton step toward E = 0, or null when the local Jacobian cannot be inverted. */
+function newtonStep(sample: FieldSample): Point | null {
+  const det = sample.xx * sample.yy - sample.xy * sample.xy;
+  if (!(Math.abs(det) > 1e-8)) {
+    return null;
+  }
+  return {
+    x: (-sample.ex * sample.yy + sample.xy * sample.ey) / det,
+    y: (sample.xy * sample.ex - sample.xx * sample.ey) / det,
+  };
+}
+
+/** Walk from a seed to a nearby field zero, staying on the board and outside charge disks. */
+function refineFieldZero(charges: readonly Charge[], seed: Point, bounds: FieldBounds): Point | null {
+  let current = seed;
+  for (let iteration = 0; iteration < 16; iteration++) {
+    if (!insideFieldBounds(current, bounds)) {
+      return null;
+    }
+    const sample = fieldSample(charges, current);
+    if (!sample) {
+      return null;
+    }
+    if (Math.hypot(sample.ex, sample.ey) < FIELD_ZERO_RESIDUAL) {
+      return current;
+    }
+    const step = newtonStep(sample);
+    if (!step || Math.hypot(step.x, step.y) > FIELD_ZERO_MAX_STEP_M) {
+      return null;
+    }
+    const next = { x: current.x + step.x, y: current.y + step.y };
+    if (Math.hypot(next.x - seed.x, next.y - seed.y) > FIELD_ZERO_MAX_TRAVEL_M) {
+      return null;
+    }
+    current = next;
+  }
+  return null;
+}
+
+function isFieldLocalMinimum(charges: readonly Charge[], point: Point, bounds: FieldBounds): boolean {
+  const sample = fieldSample(charges, point);
+  if (!sample) {
+    return false;
+  }
+  const here = Math.hypot(sample.ex, sample.ey);
+  const neighbors = [
+    { x: point.x + FIELD_ZERO_GRID_M, y: point.y },
+    { x: point.x - FIELD_ZERO_GRID_M, y: point.y },
+    { x: point.x, y: point.y + FIELD_ZERO_GRID_M },
+    { x: point.x, y: point.y - FIELD_ZERO_GRID_M },
+  ];
+  let compared = 0;
+  for (const neighbor of neighbors) {
+    if (!insideFieldBounds(neighbor, bounds)) {
+      continue;
+    }
+    const nearby = fieldSample(charges, neighbor);
+    if (!nearby) {
+      continue;
+    }
+    compared++;
+    if (Math.hypot(nearby.ex, nearby.ey) < here) {
+      return false;
+    }
+  }
+  return compared >= 2;
+}
+
+/**
+ * Isolated points where the electric field cancels. A dipole has none; two like charges,
+ * a square of like charges, and a quadrupole each have one at the centre of symmetry.
+ * An identically zero field (every charge cancelled) returns no markers.
+ */
+export function findFieldZeros(sourceCharges: readonly Charge[], bounds: FieldBounds): Point[] {
+  const charges = combineCoincidentCharges(sourceCharges);
+  if (charges.length === 0) {
+    return [];
+  }
+  const probes = [
+    { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 },
+    { x: bounds.minX + 0.4, y: bounds.minY + 0.4 },
+    { x: bounds.maxX - 0.4, y: bounds.maxY - 0.4 },
+  ];
+  const uniformlyZero = probes.every((probe) => {
+    const sample = fieldSample(charges, probe);
+    return sample !== null && Math.hypot(sample.ex, sample.ey) < FIELD_ZERO_RESIDUAL;
+  });
+  if (uniformlyZero) {
+    return [];
+  }
+
+  const zeros: Point[] = [];
+  const accept = (point: Point | null): void => {
+    if (!(point && insideFieldBounds(point, bounds))) {
+      return;
+    }
+    if (zeros.some((other) => Math.hypot(other.x - point.x, other.y - point.y) < FIELD_ZERO_MERGE_M)) {
+      return;
+    }
+    zeros.push(point);
+  };
+
+  for (let i = 0; i < charges.length; i++) {
+    for (let j = i + 1; j < charges.length; j++) {
+      const a = charges[i];
+      const b = charges[j];
+      if (a && b) {
+        accept(refineFieldZero(charges, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, bounds));
+      }
+    }
+  }
+
+  const minI = Math.ceil(bounds.minX / FIELD_ZERO_GRID_M);
+  const maxI = Math.floor(bounds.maxX / FIELD_ZERO_GRID_M);
+  const minJ = Math.ceil(bounds.minY / FIELD_ZERO_GRID_M);
+  const maxJ = Math.floor(bounds.maxY / FIELD_ZERO_GRID_M);
+  for (let i = minI; i <= maxI; i++) {
+    for (let j = minJ; j <= maxJ; j++) {
+      const point = { x: i * FIELD_ZERO_GRID_M, y: j * FIELD_ZERO_GRID_M };
+      if (isFieldLocalMinimum(charges, point, bounds)) {
+        accept(refineFieldZero(charges, point, bounds));
+      }
+    }
+  }
+  return zeros;
 }

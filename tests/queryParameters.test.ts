@@ -10,7 +10,7 @@ describe("launch query parameters", () => {
   it("reads checkbox and configuration values from a query string", () => {
     const parsed = QueryStringMachine.getAllForString(
       schema,
-      "?preset=quadrupole&showVoltage=true&showVectors=false&snapToGrid=true&drawMode=true&automaticLines=false&showValues=true&showGrid=false&showLines=false&denseFieldLines=true",
+      "?preset=quadrupole&showVoltage=true&showVectors=false&snapToGrid=true&drawMode=true&automaticLines=false&showValues=true&showGrid=false&showLines=false&voltageScale=auto&arrowScale=linear&fieldLineArrowheads=false&linesPerNanocoulomb=24&showFieldZeros=true",
     );
     expect(parsed.preset).toBe("quadrupole");
     expect(parsed.showVoltage).toBe(true);
@@ -21,11 +21,18 @@ describe("launch query parameters", () => {
     expect(parsed.showValues).toBe(true);
     expect(parsed.showGrid).toBe(false);
     expect(parsed.showLines).toBe(false);
-    expect(parsed.denseFieldLines).toBe(true);
+    expect(parsed.voltageScale).toBe("auto");
+    expect(parsed.arrowScale).toBe("linear");
+    expect(parsed.fieldLineArrowheads).toBe(false);
+    expect(parsed.linesPerNanocoulomb).toBe(24);
+    expect(parsed.showFieldZeros).toBe(true);
   });
 
   it("keeps the built-in defaults when a value is missing or unrecognized", () => {
-    const parsed = QueryStringMachine.getAllForString(schema, "?preset=not-a-preset&showVoltage=maybe");
+    const parsed = QueryStringMachine.getAllForString(
+      schema,
+      "?preset=not-a-preset&showVoltage=maybe&voltageScale=nope&arrowScale=quadratic&linesPerNanocoulomb=20",
+    );
     expect(parsed.preset).toBe("dipole");
     expect(parsed.showVoltage).toBe(false);
     expect(parsed.showVectors).toBe(true);
@@ -34,6 +41,11 @@ describe("launch query parameters", () => {
     expect(parsed.showGrid).toBe(true);
     expect(parsed.snapToGrid).toBe(false);
     expect(parsed.drawMode).toBe(false);
+    expect(parsed.voltageScale).toBe("40");
+    expect(parsed.arrowScale).toBe("compressed");
+    expect(parsed.fieldLineArrowheads).toBe(true);
+    expect(parsed.linesPerNanocoulomb).toBe(12);
+    expect(parsed.showFieldZeros).toBe(false);
   });
 
   it("opens on the requested configuration and restores it on reset", () => {

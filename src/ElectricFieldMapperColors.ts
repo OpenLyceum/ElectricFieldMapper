@@ -180,6 +180,16 @@ const ElectricFieldMapperColors = {
     default: "rgb(50,255,100)",
     projector: "#000000",
   }),
+  /** Ring and centre dot drawn where the electric field cancels. */
+  fieldZeroColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "fieldZero", {
+    default: "#f7f7f2",
+    projector: "#1a1a1a",
+  }),
+  /** Halo behind a field-zero marker so it stays visible on the voltage map. */
+  fieldZeroHaloColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "fieldZeroHalo", {
+    default: "rgba(0,0,0,0.55)",
+    projector: "rgba(255,255,255,0.85)",
+  }),
   voltmeterCrosshairColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "voltmeterCrosshair", {
     default: "#ffffff",
     projector: "#000000",

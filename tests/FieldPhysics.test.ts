@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { CHARGE_PRESETS } from "../src/explore/model/ChargePresets.js";
 import { FIELD_BOUNDS } from "../src/explore/model/ExploreModel.js";
 import {
   automaticFieldLines,
   electricField,
   electricPotential,
+  findFieldZeros,
   POTENTIAL_SATURATION,
   potentialColorFraction,
+  potentialSaturation,
   traceEquipotential,
   traceFieldLine,
 } from "../src/explore/model/FieldPhysics.js";
@@ -246,5 +249,55 @@ describe("equipotentials and the voltage map", () => {
     expect(potentialColorFraction(-4 * POTENTIAL_SATURATION)).toBe(-1);
     expect(potentialColorFraction(Infinity)).toBe(1);
     expect(potentialColorFraction(Number.NaN)).toBe(0);
+    expect(potentialColorFraction(10, 10)).toBe(1);
+    expect(potentialColorFraction(10, 40)).toBeCloseTo(0.25);
+    expect(potentialColorFraction(10, 0)).toBe(0);
+  });
+
+  it("uses a fixed voltage scale, and a tighter automatic scale for one charge", () => {
+    const charge = [{ x: 0, y: 0, q: 1 }];
+    expect(potentialSaturation("10", charge, FIELD_BOUNDS)).toBe(10);
+    expect(potentialSaturation("40", charge, FIELD_BOUNDS)).toBe(40);
+    expect(potentialSaturation("200", charge, FIELD_BOUNDS)).toBe(200);
+    expect(potentialSaturation("auto", [], FIELD_BOUNDS)).toBe(POTENTIAL_SATURATION);
+    const single = potentialSaturation("auto", charge, FIELD_BOUNDS);
+    const plates = potentialSaturation("auto", CHARGE_PRESETS.parallelPlates, FIELD_BOUNDS);
+    expect(single).toBeGreaterThanOrEqual(5);
+    expect(single).toBeLessThan(POTENTIAL_SATURATION);
+    expect(plates).toBeGreaterThan(single);
+    expect(plates).toBeLessThanOrEqual(500);
+  });
+
+  it("marks isolated field zeros and leaves a dipole unmarked", () => {
+    const includesOrigin = (points: { x: number; y: number }[]) =>
+      points.some((point) => Math.hypot(point.x, point.y) < 1e-3);
+    const expectRealZeros = (
+      charges: readonly { x: number; y: number; q: number }[],
+      points: { x: number; y: number }[],
+    ) => {
+      expect(points.length).toBeGreaterThan(0);
+      for (const zero of points) {
+        const field = electricField(charges, zero);
+        expect(Math.hypot(field.x, field.y)).toBeLessThan(1e-3);
+        for (const charge of charges) {
+          expect(Math.hypot(zero.x - charge.x, zero.y - charge.y)).toBeGreaterThan(0.2);
+        }
+      }
+    };
+    expect(findFieldZeros(dipole, FIELD_BOUNDS)).toEqual([]);
+    expect(findFieldZeros([{ x: 0, y: 0, q: 1 }], FIELD_BOUNDS)).toEqual([]);
+    const likePair = findFieldZeros(CHARGE_PRESETS.likePair, FIELD_BOUNDS);
+    expect(likePair).toHaveLength(1);
+    expect(includesOrigin(likePair)).toBe(true);
+    const square = findFieldZeros(CHARGE_PRESETS.square, FIELD_BOUNDS);
+    expect(square).toHaveLength(5);
+    expect(includesOrigin(square)).toBe(true);
+    expectRealZeros(CHARGE_PRESETS.square, square);
+    const quadrupole = findFieldZeros(CHARGE_PRESETS.quadrupole, FIELD_BOUNDS);
+    expect(quadrupole).toHaveLength(1);
+    expect(includesOrigin(quadrupole)).toBe(true);
+    const alternating = findFieldZeros(CHARGE_PRESETS.alternatingLine, FIELD_BOUNDS);
+    expect(alternating).toHaveLength(4);
+    expectRealZeros(CHARGE_PRESETS.alternatingLine, alternating);
   });
 });
