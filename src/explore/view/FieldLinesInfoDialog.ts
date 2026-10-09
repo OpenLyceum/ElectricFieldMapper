@@ -1,9 +1,10 @@
 /**
  * FieldLinesInfoDialog.ts
  *
- * Explains why field lines can meet at one point on this two-dimensional board.
+ * Explains the anomalous meeting of field lines for a square of positive charges.
  */
 
+import { DerivedProperty } from "scenerystack/axon";
 import { RichText, Text } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { Dialog } from "scenerystack/sim";
@@ -19,11 +20,12 @@ export class FieldLinesInfoDialog extends Dialog {
       fill: ElectricFieldMapperColors.textColorProperty,
       maxWidth: INFO_DIALOG_LINE_WRAP,
     });
+    const spokenBody = new DerivedProperty([ui.infoBodyStringProperty], (markup) => markup.replace(/<\/?b>/g, ""));
     const body = new RichText(ui.infoBodyStringProperty, {
       font: new PhetFont(16),
       fill: ElectricFieldMapperColors.textColorProperty,
       lineWrap: INFO_DIALOG_LINE_WRAP,
-      accessibleParagraph: ui.infoBodyStringProperty,
+      accessibleParagraph: spokenBody,
     });
     super(body, {
       title,

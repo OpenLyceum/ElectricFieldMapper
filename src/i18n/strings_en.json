@@ -28,7 +28,7 @@
         "plotEquipotential": "Plot equipotential line through the crosshair",
         "clearEquipotentials": "Erase equipotential lines",
         "chargePresets": "Charge configurations",
-        "info": "Information about field lines",
+        "info": "Where field lines end",
         "reset": "Reset all"
       }
     }
@@ -77,7 +77,7 @@
     "direction": "Direction",
     "centimeterUnit": "cm",
     "oneMeter": "1 meter",
-    "infoTitle": "Field lines",
-    "infoBody": "Electric field lines can all merge at one point on this board. In reality, lines that come together like that would leave the plane and continue in the third dimension, so they would not stay merged at a single point. This simulation is drawn in a two-dimensional plane, and that escape out of the plane cannot be shown."
+    "infoTitle": "Where field lines end",
+    "infoBody": "Field lines usually start on a positive charge and end on a negative charge, or they run out to infinity. That does not always happen here. Choose <b>Square of positive charges</b>: four positive charges sit at the corners, and the lines from all four merge in the middle. None of them ends on a negative charge or continues to infinity. That meeting point is an anomaly of this flat drawing. In three dimensions those lines would leave the plane through the third dimension instead of ending together, and a two-dimensional view cannot show that escape."
   }
 }

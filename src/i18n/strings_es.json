@@ -28,7 +28,7 @@
         "plotEquipotential": "Trazar la equipotencial que pasa por la mira",
         "clearEquipotentials": "Borrar las equipotenciales",
         "chargePresets": "Configuraciones de cargas",
-        "info": "Información sobre las líneas de campo",
+        "info": "Dónde terminan las líneas de campo",
         "reset": "Restablecer todo"
       }
     }
@@ -77,7 +77,7 @@
     "direction": "Dirección",
     "centimeterUnit": "cm",
     "oneMeter": "1 metro",
-    "infoTitle": "Líneas de campo",
-    "infoBody": "Las líneas de campo eléctrico pueden unirse todas en un mismo punto de este tablero. En la realidad, las líneas que se encuentran así saldrían del plano y continuarían en la tercera dimensión, de modo que no permanecerían unidas en un solo punto. Esta simulación se dibuja en un plano bidimensional, y esa salida fuera del plano no se puede mostrar."
+    "infoTitle": "Dónde terminan las líneas de campo",
+    "infoBody": "Las líneas de campo suelen salir de una carga positiva y terminar en una carga negativa, o bien alejarse hasta el infinito. Eso no siempre ocurre aquí. Elige <b>Cuadrado de cargas positivas</b>: cuatro cargas positivas están en las esquinas, y las líneas de las cuatro se unen en el centro. Ninguna termina en una carga negativa ni continúa hasta el infinito. Ese punto de encuentro es una anomalía de este dibujo plano. En tres dimensiones, esas líneas saldrían del plano por la tercera dimensión en lugar de terminar juntas, y una vista bidimensional no puede mostrar esa salida."
   }
 }
