@@ -1,0 +1,52 @@
+{
+  "title": "Electric Field Mapper",
+  "screens": {
+    "explore": "Explore"
+  },
+  "a11y": {
+    "explore": {
+      "screenSummary": {
+        "playArea": "Positive and negative charges create an electric field. The board shows field vectors and electric field lines.",
+        "controlArea": "Drag charges from the charge box onto the board or back to the box to remove them. Change the overlays, draw field lines, and move the probe to read field strength and potential.",
+        "interactionHint": "Drag a charge from the box onto the board. Drag it back to the box to remove it. Turn on Tap to draw, then tap the board to place field lines."
+      },
+      "currentDetails": "Charges and field probe are ready.",
+      "controls": {
+        "playArea": "Field board. When Tap to draw is selected, tap to place a field line.",
+        "positiveCharge": "Positive one nanocoulomb charge",
+        "negativeCharge": "Negative one nanocoulomb charge",
+        "moveCharge": "Drag or use arrow keys to move the charge. Drag it to the charge box or press Delete to remove it.",
+        "takeCharge": "Drag onto the board, or press Enter or Space to add a charge.",
+        "probe": "Electric field probe",
+        "moveProbe": "Drag or use arrow keys to measure at another point.",
+        "reset": "Reset all"
+      }
+    }
+  },
+  "preferences": {
+    "title": "Simulation",
+    "denseFieldLines": "More automatic field lines"
+  },
+  "ui": {
+    "charges": "Charges",
+    "addPositive": "+ Charge",
+    "addNegative": "− Charge",
+    "positiveOneNc": "+1 nC",
+    "negativeOneNc": "−1 nC",
+    "removeLast": "Remove last",
+    "clearCharges": "Clear all",
+    "display": "Display",
+    "showVectors": "Field vectors",
+    "showLines": "Field lines",
+    "automaticLines": "Automatic lines",
+    "showGrid": "Grid",
+    "draw": "Draw lines",
+    "drawMode": "Tap to draw",
+    "seedAtProbe": "Line at probe",
+    "clearLines": "Clear drawn lines",
+    "probe": "Field probe",
+    "hint": "Drag charges from the box onto the board and back to remove them. Select Tap to draw, then tap the board.",
+    "fieldStrength": "Field strength",
+    "potential": "Potential"
+  }
+}

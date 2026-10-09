@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Electric Field Mapper">
+  <rect width="512" height="512" rx="92" fill="#101d35"/>
+  <g fill="none" stroke="#f5ca66" stroke-width="9" stroke-linecap="round">
+    <path d="M155 195C212 78 303 79 358 195"/>
+    <path d="M155 317C212 434 303 433 358 317"/>
+    <path d="M171 256h170"/>
+    <path d="M160 221c70-41 120-41 192 0"/>
+    <path d="M160 291c70 41 120 41 192 0"/>
+  </g>
+  <g fill="#f5ca66"><path d="m290 243 22 13-22 13z"/><path d="m288 205 24 5-17 18z"/><path d="m288 307 24-5-17-18z"/></g>
+  <circle cx="145" cy="256" r="53" fill="#e65a65" stroke="white" stroke-width="8"/>
+  <circle cx="367" cy="256" r="53" fill="#4c78e9" stroke="white" stroke-width="8"/>
+  <path d="M119 256h52m-26-26v52M341 256h52" stroke="white" stroke-width="13" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,52 @@
+{
+  "title": "Electric Field Mapper",
+  "screens": {
+    "explore": "Explore"
+  },
+  "a11y": {
+    "explore": {
+      "screenSummary": {
+        "playArea": "Las cargas positivas y negativas crean un campo eléctrico. El tablero muestra vectores y líneas de campo.",
+        "controlArea": "Arrastra cargas de la caja al tablero o devuélvelas a la caja para quitarlas. Cambia las capas, dibuja líneas y mueve la sonda para medir el campo y el potencial.",
+        "interactionHint": "Arrastra una carga de la caja al tablero. Devuélvela a la caja para quitarla. Activa Tocar para dibujar y toca el tablero."
+      },
+      "currentDetails": "Las cargas y la sonda están listas.",
+      "controls": {
+        "playArea": "Tablero de campo. Al activar Tocar para dibujar, toca para colocar una línea de campo.",
+        "positiveCharge": "Carga positiva de un nanoculombio",
+        "negativeCharge": "Carga negativa de un nanoculombio",
+        "moveCharge": "Arrastra o usa las flechas para mover la carga. Devuélvela a la caja o pulsa Supr para quitarla.",
+        "takeCharge": "Arrastra al tablero o pulsa Intro o Espacio para añadir una carga.",
+        "probe": "Sonda de campo eléctrico",
+        "moveProbe": "Arrastra o usa las flechas para medir en otro punto.",
+        "reset": "Restablecer todo"
+      }
+    }
+  },
+  "preferences": {
+    "title": "Simulación",
+    "denseFieldLines": "Más líneas de campo automáticas"
+  },
+  "ui": {
+    "charges": "Cargas",
+    "addPositive": "+ Carga",
+    "addNegative": "− Carga",
+    "positiveOneNc": "+1 nC",
+    "negativeOneNc": "−1 nC",
+    "removeLast": "Quitar última",
+    "clearCharges": "Borrar todas",
+    "display": "Mostrar",
+    "showVectors": "Vectores de campo",
+    "showLines": "Líneas de campo",
+    "automaticLines": "Líneas automáticas",
+    "showGrid": "Cuadrícula",
+    "draw": "Dibujar líneas",
+    "drawMode": "Tocar para dibujar",
+    "seedAtProbe": "Línea en la sonda",
+    "clearLines": "Borrar líneas",
+    "probe": "Sonda de campo",
+    "hint": "Arrastra cargas de la caja al tablero y devuélvelas para quitarlas. Activa Tocar para dibujar y toca el tablero.",
+    "fieldStrength": "Intensidad",
+    "potential": "Potencial"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "title": "Electric Field Mapper",
+  "screens": {
+    "explore": "Explore"
+  },
+  "a11y": {
+    "explore": {
+      "screenSummary": {
+        "playArea": "Les charges positives et négatives créent un champ électrique. La zone affiche vecteurs et lignes de champ.",
+        "controlArea": "Glissez les charges de la boîte vers la zone ou ramenez-les dans la boîte pour les retirer. Changez les affichages, tracez des lignes et déplacez la sonde.",
+        "interactionHint": "Glissez une charge de la boîte vers la zone. Ramenez-la dans la boîte pour la retirer. Activez le tracé puis touchez la zone."
+      },
+      "currentDetails": "Les charges et la sonde sont prêtes.",
+      "controls": {
+        "playArea": "Zone du champ. Quand le tracé est activé, touchez pour placer une ligne.",
+        "positiveCharge": "Charge positive de un nanocoulomb",
+        "negativeCharge": "Charge négative de un nanocoulomb",
+        "moveCharge": "Glissez ou utilisez les flèches pour déplacer la charge. Ramenez-la dans la boîte ou appuyez sur Suppr pour la retirer.",
+        "takeCharge": "Glissez vers la zone ou appuyez sur Entrée ou Espace pour ajouter une charge.",
+        "probe": "Sonde de champ électrique",
+        "moveProbe": "Glissez ou utilisez les flèches pour mesurer ailleurs.",
+        "reset": "Tout réinitialiser"
+      }
+    }
+  },
+  "preferences": {
+    "title": "Simulation",
+    "denseFieldLines": "Plus de lignes de champ automatiques"
+  },
+  "ui": {
+    "charges": "Charges",
+    "addPositive": "+ Charge",
+    "addNegative": "− Charge",
+    "positiveOneNc": "+1 nC",
+    "negativeOneNc": "−1 nC",
+    "removeLast": "Retirer dernière",
+    "clearCharges": "Tout effacer",
+    "display": "Affichage",
+    "showVectors": "Vecteurs du champ",
+    "showLines": "Lignes de champ",
+    "automaticLines": "Lignes automatiques",
+    "showGrid": "Grille",
+    "draw": "Tracer des lignes",
+    "drawMode": "Toucher pour tracer",
+    "seedAtProbe": "Ligne à la sonde",
+    "clearLines": "Effacer les lignes",
+    "probe": "Sonde de champ",
+    "hint": "Glissez les charges de la boîte vers la zone et ramenez-les pour les retirer. Activez le tracé puis touchez la zone.",
+    "fieldStrength": "Intensité",
+    "potential": "Potentiel"
+  }
+}
