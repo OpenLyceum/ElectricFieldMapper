@@ -18,9 +18,12 @@ import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { Checkbox, ComboBox, RectangularPushButton } from "scenerystack/sun";
 import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
 import {
+  ELECTRIC_FIELD_MAPPER_COMBO_BOX_OPTIONS,
   FLAT_PANEL_PUSH_BUTTON_OPTIONS,
   FLAT_RESET_ALL_BUTTON_OPTIONS,
+  LIGHT_SURFACE_TEXT_FILL,
 } from "../../common/ElectricFieldMapperButtonOptions.js";
+import { ELECTRIC_FIELD_MAPPER_CHECKBOX_OPTIONS } from "../../common/ElectricFieldMapperControlOptions.js";
 import { ElectricFieldMapperPanel } from "../../common/ElectricFieldMapperPanel.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import {
@@ -341,7 +344,7 @@ export class ExploreScreenView extends ScreenView {
       new Checkbox(
         property,
         new Text(label, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty, maxWidth: 190 }),
-        { checkboxColor: ElectricFieldMapperColors.textColorProperty, spacing: 8, boxWidth: 16, accessibleName: label },
+        { ...ELECTRIC_FIELD_MAPPER_CHECKBOX_OPTIONS, accessibleName: label },
       );
     const heading = (label: typeof ui.chargesStringProperty) =>
       new Text(label, {
@@ -375,15 +378,12 @@ export class ExploreScreenView extends ScreenView {
       ] as const
     ).map(([value, label]) => ({
       value,
-      createNode: () => new Text(label, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty }),
+      createNode: () => new Text(label, { font: "14px sans-serif", fill: LIGHT_SURFACE_TEXT_FILL }),
       accessibleName: label,
     }));
     const chargePresets = new ComboBox(model.presetProperty, presetItems, comboListParent, {
+      ...ELECTRIC_FIELD_MAPPER_COMBO_BOX_OPTIONS,
       accessibleName: a11y.controls.chargePresetsStringProperty,
-      buttonFill: ElectricFieldMapperColors.playAreaColorProperty,
-      buttonStroke: ElectricFieldMapperColors.panelBorderColorProperty,
-      listFill: ElectricFieldMapperColors.playAreaColorProperty,
-      listStroke: ElectricFieldMapperColors.panelBorderColorProperty,
     });
     const snapToGrid = check(model.snapToGridProperty, ui.snapToGridStringProperty);
     const seedAtVoltmeter = button(ui.seedAtProbeStringProperty, () => {

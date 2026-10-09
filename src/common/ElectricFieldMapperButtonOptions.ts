@@ -20,13 +20,15 @@ export const LIGHT_SURFACE_TEXT_FILL = ElectricFieldMapperColors.controlSurfaceT
 /**
  * Combo-box chrome for panels. Item labels must use {@link LIGHT_SURFACE_TEXT_FILL}, not
  * {@link ElectricFieldMapperColors.textColorProperty} — that color is for labels on the dark panel fill.
+ * {@link ElectricFieldMapperColors.controlSurfaceHighlightColorProperty} marks the hovered or focused row.
  */
 export const ELECTRIC_FIELD_MAPPER_COMBO_BOX_OPTIONS = {
   buttonFill: ElectricFieldMapperColors.controlSurfaceColorProperty,
   listFill: ElectricFieldMapperColors.controlSurfaceColorProperty,
   buttonStroke: ElectricFieldMapperColors.panelBorderColorProperty,
   listStroke: ElectricFieldMapperColors.panelBorderColorProperty,
-} satisfies Pick<ComboBoxOptions, "buttonFill" | "listFill" | "buttonStroke" | "listStroke">;
+  highlightFill: ElectricFieldMapperColors.controlSurfaceHighlightColorProperty,
+} satisfies Pick<ComboBoxOptions, "buttonFill" | "listFill" | "buttonStroke" | "listStroke" | "highlightFill">;
 
 /** Options for RectangularPushButton and NumberControl arrow buttons. */
 export const FLAT_RECTANGULAR_BUTTON_OPTIONS = FLAT_BUTTON_APPEARANCE_OPTIONS;

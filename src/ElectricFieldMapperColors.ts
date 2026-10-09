@@ -198,6 +198,20 @@ const ElectricFieldMapperColors = {
     default: "#1a1a1a",
     projector: "#1a1a1a",
   }),
+
+  /**
+   * Hover and keyboard highlight on a light combo-box list.
+   * Darker than the white list so the current row is obvious, and still light enough
+   * for {@link controlSurfaceTextColorProperty}.
+   */
+  controlSurfaceHighlightColorProperty: new ProfileColorProperty(
+    ElectricFieldMapperNamespace,
+    "controlSurfaceHighlight",
+    {
+      default: "#a6d8f5",
+      projector: "#a6d8f5",
+    },
+  ),
 };
 
 export default ElectricFieldMapperColors;
