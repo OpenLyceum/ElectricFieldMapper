@@ -2,7 +2,7 @@
 
 The simulation was scaffolded from `SceneryStackTemplate` and uses a single Explore screen. The published PhET `Charges and Fields` source under `/home/veillette/totality/charges-and-fields` informed the point-charge field and potential formulas the charge and sensor appearance, the voltage-map colours, and the voltmeter with equipotential plotting. The local `/home/veillette/vgit/charges-and-fields` fork supplied the bidirectional RK4 field-line approach. This repo implements its own model and CanvasNode drawing with SceneryStack package imports.
 
-The model owns each charge's reactive position, overlay toggles, field sensors, the voltmeter state, equipotential seeds, and the manual field-line seeds. `changeCountProperty` invalidates the canvas when a charge or seed changes. Vector arrows are sampled on a half-metre grid; displayed length and opacity compress the large range of physical strengths, while sensor and voltmeter readouts use physical values.
+The model owns each charge's reactive position, overlay toggles (including the Values checkbox for sensor and equipotential numbers), field sensors, the voltmeter state, equipotential seeds, and the manual field-line seeds. `changeCountProperty` invalidates the canvas when a charge or seed changes. Vector arrows are sampled on a half-metre grid; displayed length and opacity compress the large range of physical strengths, while sensor and voltmeter readouts use physical values.
 
 Named charge configurations live in `ChargePresets.ts`; the model rebuilds charges when one is selected and marks the arrangement Custom after a manual charge edit. The shared `GRID_SPACING_M` constant drives both the drawn grid and charge snapping.
 
@@ -12,7 +12,7 @@ The board fits the SceneryStack 1024 × 618 design space with a panel on the rig
 
 ## Field-line density preference
 
-- The Simulation preference changes automatic seeds from twelve to twenty per source charge.
+- The Simulation preference changes automatic line density from twelve to twenty per nanocoulomb at each charge.
 - It is also available through the public `?denseFieldLines=true` query parameter.
 - The preference property is shared with the Explore model and directly invalidates the canvas.
 - User placed line seeds are unaffected by the preference.

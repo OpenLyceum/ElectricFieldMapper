@@ -1,5 +1,5 @@
 import type { TReadOnlyProperty } from "scenerystack/axon";
-import { Bounds2, Vector2, type Vector2Property } from "scenerystack/dot";
+import { type Bounds2, Vector2, type Vector2Property } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import {
@@ -32,7 +32,12 @@ import {
   SCREEN_VIEW_MARGIN,
 } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import { type ElectricFieldSensor, type ExploreModel, FIELD_BOUNDS, type PointCharge } from "../model/ExploreModel.js";
+import {
+  type ElectricFieldSensor,
+  ENLARGED_FIELD_BOUNDS,
+  type ExploreModel,
+  type PointCharge,
+} from "../model/ExploreModel.js";
 import { ChargeNode } from "./ChargeNode.js";
 import { createFieldSensorDisk, ElectricFieldSensorNode } from "./ElectricFieldSensorNode.js";
 import { ExploreScreenSummaryContent } from "./ExploreScreenSummaryContent.js";
@@ -41,15 +46,19 @@ import { createVoltmeterIcon, VoltmeterNode } from "./VoltmeterNode.js";
 
 export type ExploreScreenViewOptions = ScreenViewOptions;
 
+/** Layout point where the model origin sits, and the board scale (view pixels per metre). */
+const ORIGIN_VIEW_POSITION = new Vector2(369, 284);
+const VIEW_PIXELS_PER_METRE = 83;
+
 /**
- * Moves a released item back inside the board, `margin` metres from its edges. Only assigns when
- * the position actually changes: a drag can end while its position is still notifying listeners.
+ * Moves a released item back inside the visible field, `margin` metres from its edges. Only assigns
+ * when the position actually changes: a drag can end while its position is still notifying listeners.
  */
-function clampToBoard(positionProperty: Vector2Property, margin: number): void {
+function clampToBoard(positionProperty: Vector2Property, fieldBounds: Bounds2, margin: number): void {
   const p = positionProperty.value;
   const clamped = new Vector2(
-    Math.max(FIELD_BOUNDS.minX + margin, Math.min(FIELD_BOUNDS.maxX - margin, p.x)),
-    Math.max(FIELD_BOUNDS.minY + margin, Math.min(FIELD_BOUNDS.maxY - margin, p.y)),
+    Math.max(fieldBounds.minX + margin, Math.min(fieldBounds.maxX - margin, p.x)),
+    Math.max(fieldBounds.minY + margin, Math.min(fieldBounds.maxY - margin, p.y)),
   );
   if (!clamped.equals(p)) {
     positionProperty.value = clamped;
@@ -67,41 +76,33 @@ export class ExploreScreenView extends ScreenView {
     const strings = StringManager.getInstance();
     const ui = strings.getUiStrings();
     const a11y = strings.getExploreA11yStrings();
-    const bounds = this.layoutBounds;
-    this.addChild(
-      new Rectangle(0, 0, bounds.width, bounds.height, { fill: ElectricFieldMapperColors.backgroundColorProperty }),
-    );
-
-    const boardBounds = new Bounds2(34, 34, 704, 534);
-    const board = new Rectangle(boardBounds.minX, boardBounds.minY, boardBounds.width, boardBounds.height, {
+    // Like Charges and Fields, the board has no frame: it fills the whole window, and the field, grid,
+    // and voltage map extend as far as the window shows (up to ENLARGED_FIELD_BOUNDS).
+    const board = new Rectangle(this.layoutBounds, {
       fill: ElectricFieldMapperColors.playAreaColorProperty,
-      stroke: ElectricFieldMapperColors.panelBorderColorProperty,
-      lineWidth: 2,
       cursor: "crosshair",
       tagName: "div",
       accessibleName: a11y.controls.playAreaStringProperty,
     });
-    const mvt = ModelViewTransform2.createSinglePointScaleMapping(new Vector2(0, 0), boardBounds.center, 83);
+    const mvt = ModelViewTransform2.createSinglePointScaleMapping(
+      Vector2.ZERO,
+      ORIGIN_VIEW_POSITION,
+      VIEW_PIXELS_PER_METRE,
+    );
     const boardPress = new PressListener({
       press: (event) => {
         if (!model.drawModeProperty.value) {
           return;
         }
         const p = mvt.viewToModelPosition(this.globalToLocalPoint(event.pointer.point));
-        if (
-          p.x >= FIELD_BOUNDS.minX &&
-          p.x <= FIELD_BOUNDS.maxX &&
-          p.y >= FIELD_BOUNDS.minY &&
-          p.y <= FIELD_BOUNDS.maxY &&
-          !model.isNearCharge(p)
-        ) {
+        if (model.fieldBoundsProperty.value.containsPoint(p) && !model.isNearCharge(p)) {
           model.addSeed(p);
         }
       },
     });
     board.addInputListener(boardPress);
     this.addChild(board);
-    this.addChild(new FieldCanvasNode(model, mvt, boardBounds));
+    this.addChild(new FieldCanvasNode(model, mvt));
 
     // Both boxes are created below; drop handlers only run after construction.
     let chargeBox: Node | null = null;
@@ -120,7 +121,7 @@ export class ExploreScreenView extends ScreenView {
       }
       // Charges follow the pointer into the toolbox, but settle inside the field when released elsewhere.
       const margin = model.snapToGridProperty.value ? GRID_SPACING_M : 0.18;
-      clampToBoard(charge.positionProperty, margin);
+      clampToBoard(charge.positionProperty, model.fieldBoundsProperty.value, margin);
       if (model.snapToGridProperty.value) {
         const snapped = model.snapPosition(charge.positionProperty.value);
         if (!snapped.equals(charge.positionProperty.value)) {
@@ -154,7 +155,7 @@ export class ExploreScreenView extends ScreenView {
         model.removeSensor(sensor);
         return;
       }
-      clampToBoard(sensor.positionProperty, 0.1);
+      clampToBoard(sensor.positionProperty, model.fieldBoundsProperty.value, 0.1);
     };
     const addSensorNode = (sensor: ElectricFieldSensor): void => {
       const node = new ElectricFieldSensorNode(sensor, model, mvt, finishSensorDrag);
@@ -181,7 +182,7 @@ export class ExploreScreenView extends ScreenView {
         model.voltmeterActiveProperty.value = false;
         return;
       }
-      clampToBoard(model.voltmeterPositionProperty, 0.05);
+      clampToBoard(model.voltmeterPositionProperty, model.fieldBoundsProperty.value, 0.05);
     });
     this.addChild(voltmeter);
 
@@ -414,6 +415,7 @@ export class ExploreScreenView extends ScreenView {
           check(model.showLinesProperty, ui.showLinesStringProperty),
           check(model.automaticLinesProperty, ui.automaticLinesStringProperty),
           check(model.showVoltageProperty, ui.showVoltageStringProperty),
+          check(model.showValuesProperty, ui.showValuesStringProperty),
           check(model.showGridProperty, ui.showGridStringProperty),
           heading(ui.drawStringProperty),
           check(model.drawModeProperty, ui.drawModeStringProperty),
@@ -424,8 +426,6 @@ export class ExploreScreenView extends ScreenView {
       }),
       { xMargin: 12, yMargin: 10 },
     );
-    panel.right = bounds.maxX - SCREEN_VIEW_MARGIN;
-    panel.top = SCREEN_VIEW_MARGIN - 6;
     this.addChild(panel);
     this.addChild(comboListParent);
     // Items dragged out of the boxes must draw above the panel; the voltmeter is the largest, so it goes under sensors.
@@ -436,9 +436,6 @@ export class ExploreScreenView extends ScreenView {
     const hint = new Text(ui.hintStringProperty, {
       font: "14px sans-serif",
       fill: ElectricFieldMapperColors.textColorProperty,
-      left: boardBounds.minX,
-      top: boardBounds.maxY + 9,
-      maxWidth: boardBounds.width,
     });
     this.addChild(hint);
     const reset = new ResetAllButton({
@@ -447,11 +444,24 @@ export class ExploreScreenView extends ScreenView {
         this.interruptSubtreeInput();
         model.reset();
       },
-      right: bounds.maxX - SCREEN_VIEW_MARGIN,
-      bottom: bounds.maxY - SCREEN_VIEW_MARGIN,
       accessibleName: a11y.controls.resetStringProperty,
     });
     this.addChild(reset);
+
+    // A wider or taller window reveals more field, and the controls move out to its edges.
+    this.visibleBoundsProperty.link((visibleBounds) => {
+      board.setRectBounds(visibleBounds);
+      const fieldBounds = mvt.viewToModelBounds(visibleBounds).intersection(ENLARGED_FIELD_BOUNDS);
+      model.fieldBoundsProperty.value = fieldBounds;
+      model.keepItemsInField();
+      panel.right = visibleBounds.maxX - SCREEN_VIEW_MARGIN;
+      panel.top = visibleBounds.minY + SCREEN_VIEW_MARGIN - 6;
+      reset.right = visibleBounds.maxX - SCREEN_VIEW_MARGIN;
+      reset.bottom = visibleBounds.maxY - SCREEN_VIEW_MARGIN;
+      hint.maxWidth = Math.max(1, panel.left - visibleBounds.minX - 2 * SCREEN_VIEW_MARGIN);
+      hint.left = visibleBounds.minX + SCREEN_VIEW_MARGIN;
+      hint.bottom = visibleBounds.maxY - SCREEN_VIEW_MARGIN + 4;
+    });
     this.addChild(new Node({ pdomOrder: [chargeLayer, sensorLayer, voltmeter, panel, reset] }));
   }
 }

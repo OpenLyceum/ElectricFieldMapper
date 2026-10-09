@@ -5,7 +5,7 @@ import { ArrowNode } from "scenerystack/scenery-phet";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { FIELD_SENSOR_VIEW_RADIUS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import { type ElectricFieldSensor, type ExploreModel, KEYBOARD_DRAG_BOUNDS_PROPERTY } from "../model/ExploreModel.js";
+import type { ElectricFieldSensor, ExploreModel } from "../model/ExploreModel.js";
 import { electricField } from "../model/FieldPhysics.js";
 import { formatSignificant } from "./formatReadout.js";
 
@@ -88,6 +88,11 @@ export class ElectricFieldSensorNode extends Node {
     const updatePosition = (_position: Vector2): void => update();
     sensor.positionProperty.link(updatePosition);
     model.changeCountProperty.lazyLink(update);
+    const showLabels = (visible: boolean): void => {
+      strengthText.visible = visible;
+      angleText.visible = visible;
+    };
+    model.showValuesProperty.link(showLabels);
 
     this.dragListener = new RichDragListener({
       positionProperty: sensor.positionProperty,
@@ -96,7 +101,7 @@ export class ElectricFieldSensorNode extends Node {
       keyboardDragListenerOptions: {
         dragSpeed: 90,
         shiftDragSpeed: 30,
-        dragBoundsProperty: KEYBOARD_DRAG_BOUNDS_PROPERTY,
+        dragBoundsProperty: model.keyboardDragBoundsProperty,
       },
       end: (event) => {
         if (event) {
@@ -128,6 +133,7 @@ export class ElectricFieldSensorNode extends Node {
     this.disposeEmitter.addListener(() => {
       sensor.positionProperty.unlink(updatePosition);
       model.changeCountProperty.unlink(update);
+      model.showValuesProperty.unlink(showLabels);
       this.dragListener.isPressedProperty.unlink(announceReading);
       this.removeInputListener(this.dragListener);
       this.dragListener.dispose();

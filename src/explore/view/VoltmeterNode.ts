@@ -18,7 +18,7 @@ import { RectangularPushButton } from "scenerystack/sun";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { VOLTMETER_CROSSHAIR_RADIUS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import { type ExploreModel, KEYBOARD_DRAG_BOUNDS_PROPERTY } from "../model/ExploreModel.js";
+import type { ExploreModel } from "../model/ExploreModel.js";
 import { electricPotential } from "../model/FieldPhysics.js";
 import { formatSignificant } from "./formatReadout.js";
 import { potentialCSS } from "./potentialColor.js";
@@ -152,7 +152,7 @@ export class VoltmeterNode extends Node {
       keyboardDragListenerOptions: {
         dragSpeed: 90,
         shiftDragSpeed: 30,
-        dragBoundsProperty: KEYBOARD_DRAG_BOUNDS_PROPERTY,
+        dragBoundsProperty: model.keyboardDragBoundsProperty,
       },
       end: (event) => {
         if (event) {

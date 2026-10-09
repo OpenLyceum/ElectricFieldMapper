@@ -47,6 +47,9 @@ export const VOLTMETER_CROSSHAIR_RADIUS = 18;
 /** Distance between adjacent grid lines and charge snap points (metres). */
 export const GRID_SPACING_M = 0.5;
 
+/** Minor grid lines drawn per major grid line spacing, as in Charges and Fields. */
+export const GRID_MINOR_LINES_PER_MAJOR = 5;
+
 ElectricFieldMapperNamespace.register("ElectricFieldMapperConstants", {
   SCREEN_VIEW_MARGIN,
   PANEL_CORNER_RADIUS,
@@ -58,4 +61,5 @@ ElectricFieldMapperNamespace.register("ElectricFieldMapperConstants", {
   FIELD_SENSOR_VIEW_RADIUS,
   VOLTMETER_CROSSHAIR_RADIUS,
   GRID_SPACING_M,
+  GRID_MINOR_LINES_PER_MAJOR,
 });

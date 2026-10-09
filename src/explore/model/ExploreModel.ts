@@ -1,6 +1,7 @@
 import {
   BooleanProperty,
   createObservableArray,
+  DerivedProperty,
   NumberProperty,
   type ObservableArray,
   Property,
@@ -12,15 +13,14 @@ import { GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import { CHARGE_PRESETS, type ChargePreset } from "./ChargePresets.js";
 import { CHARGE_RADIUS, type FieldBounds, type Point } from "./FieldPhysics.js";
 
+/** Initial field area, before the view reports how much of the model the browser window shows. */
 export const FIELD_BOUNDS: FieldBounds = { minX: -4, maxX: 4, minY: -3, maxY: 3 };
 
-/**
- * Keyboard drags stay on the board (keyboard users remove items with Delete), so a keyboard drag
- * never needs clamping when it ends. Pointer drags may leave the board to reach the toolboxes.
- */
-export const KEYBOARD_DRAG_BOUNDS_PROPERTY: TReadOnlyProperty<Bounds2> = new Property(
-  new Bounds2(FIELD_BOUNDS.minX + 0.18, FIELD_BOUNDS.minY + 0.18, FIELD_BOUNDS.maxX - 0.18, FIELD_BOUNDS.maxY - 0.18),
-);
+/** The field never extends past these bounds, however wide or tall the window becomes (metres). */
+export const ENLARGED_FIELD_BOUNDS = new Bounds2(-16, -12, 16, 12);
+
+/** Distance keyboard drags keep from the edge of the field (metres). */
+const KEYBOARD_DRAG_MARGIN = 0.18;
 
 /** Model position where the voltmeter appears when placed from the keyboard. */
 const VOLTMETER_DEFAULT_POSITION = new Vector2(0, 1.55);
@@ -55,6 +55,11 @@ export class ExploreModel implements TModel {
   public readonly showVectorsProperty = new BooleanProperty(true);
   public readonly showLinesProperty = new BooleanProperty(true);
   public readonly showVoltageProperty = new BooleanProperty(false);
+  /**
+   * Numeric labels on field sensors (strength and angle) and on equipotential curves.
+   * Off by default, as in Charges and Fields. The voltmeter readout stays visible either way.
+   */
+  public readonly showValuesProperty = new BooleanProperty(false);
   public readonly showGridProperty = new BooleanProperty(true);
   public readonly snapToGridProperty = new BooleanProperty(false);
   public readonly presetProperty = new Property<ChargePreset>("dipole");
@@ -66,13 +71,26 @@ export class ExploreModel implements TModel {
   public readonly voltmeterPositionProperty = new Vector2Property(VOLTMETER_DEFAULT_POSITION);
   public readonly seedPoints: Point[] = [];
   public readonly equipotentialSeeds: Point[] = [];
+  /** The visible part of the field (model metres); the view updates it as the window resizes. */
+  public readonly fieldBoundsProperty = new Property<Bounds2>(
+    new Bounds2(FIELD_BOUNDS.minX, FIELD_BOUNDS.minY, FIELD_BOUNDS.maxX, FIELD_BOUNDS.maxY),
+  );
+  /**
+   * Keyboard drags stay on the field (keyboard users remove items with Delete), so a keyboard drag
+   * never needs clamping when it ends. Pointer drags may leave the field to reach the toolboxes.
+   */
+  public readonly keyboardDragBoundsProperty: TReadOnlyProperty<Bounds2> = new DerivedProperty(
+    [this.fieldBoundsProperty],
+    (bounds) => bounds.eroded(KEYBOARD_DRAG_MARGIN),
+  );
   private readonly chargePositionListeners = new Map<PointCharge, () => void>();
-  private applyingPreset = false;
+  /** True while charges move for a reason other than the user editing them, so the preset is kept. */
+  private movingProgrammatically = false;
 
   public constructor(denseFieldLinesProperty = new BooleanProperty(false)) {
     this.denseFieldLinesProperty = denseFieldLinesProperty;
     this.presetProperty.link((preset) => {
-      if (preset !== "custom" && !this.applyingPreset) {
+      if (preset !== "custom" && !this.movingProgrammatically) {
         this.applyPreset(preset);
       }
     });
@@ -96,14 +114,14 @@ export class ExploreModel implements TModel {
   public addCharge(q: 1 | -1, point: Point): PointCharge {
     const charge = new PointCharge(q, this.snapToGridProperty.value ? this.snapPosition(point) : point);
     const onMove = () => {
-      if (!this.applyingPreset) {
+      if (!this.movingProgrammatically) {
         this.presetProperty.value = "custom";
       }
     };
     charge.positionProperty.lazyLink(onMove);
     this.chargePositionListeners.set(charge, onMove);
     this.charges.push(charge);
-    if (!this.applyingPreset) {
+    if (!this.movingProgrammatically) {
       this.presetProperty.value = "custom";
     }
     this.notifyChanged();
@@ -118,7 +136,7 @@ export class ExploreModel implements TModel {
     }
     this.charges.remove(charge);
     charge.dispose();
-    if (!this.applyingPreset) {
+    if (!this.movingProgrammatically) {
       this.presetProperty.value = "custom";
     }
     this.notifyChanged();
@@ -131,15 +149,38 @@ export class ExploreModel implements TModel {
         ? Math.max(min + GRID_SPACING_M, Math.min(max - GRID_SPACING_M, rounded))
         : rounded;
     };
-    return new Vector2(
-      snap(point.x, FIELD_BOUNDS.minX, FIELD_BOUNDS.maxX),
-      snap(point.y, FIELD_BOUNDS.minY, FIELD_BOUNDS.maxY),
-    );
+    const bounds = this.fieldBoundsProperty.value;
+    return new Vector2(snap(point.x, bounds.minX, bounds.maxX), snap(point.y, bounds.minY, bounds.maxY));
+  }
+
+  /** Brings items back into view after the field shrinks, without counting as a user edit. */
+  public keepItemsInField(): void {
+    const bounds = this.fieldBoundsProperty.value.eroded(KEYBOARD_DRAG_MARGIN);
+    if (!bounds.isValid()) {
+      return;
+    }
+    const constrain = (property: Vector2Property): void => {
+      if (!bounds.containsPoint(property.value)) {
+        property.value = bounds.closestPointTo(property.value);
+      }
+    };
+    this.movingProgrammatically = true;
+    try {
+      for (const charge of this.charges) {
+        constrain(charge.positionProperty);
+      }
+    } finally {
+      this.movingProgrammatically = false;
+    }
+    for (const sensor of this.sensors) {
+      constrain(sensor.positionProperty);
+    }
+    constrain(this.voltmeterPositionProperty);
   }
 
   /** Replace charges with a named example. Drawn lines are cleared because their seeds refer to the old arrangement. */
   public applyPreset(preset: Exclude<ChargePreset, "custom">): void {
-    this.applyingPreset = true;
+    this.movingProgrammatically = true;
     try {
       for (const charge of [...this.charges]) {
         this.removeCharge(charge);
@@ -151,7 +192,7 @@ export class ExploreModel implements TModel {
       }
       this.presetProperty.value = preset;
     } finally {
-      this.applyingPreset = false;
+      this.movingProgrammatically = false;
     }
     this.notifyChanged();
   }
@@ -203,6 +244,7 @@ export class ExploreModel implements TModel {
     this.showVectorsProperty.reset();
     this.showLinesProperty.reset();
     this.showVoltageProperty.reset();
+    this.showValuesProperty.reset();
     this.showGridProperty.reset();
     this.snapToGridProperty.reset();
     this.drawModeProperty.reset();
@@ -214,12 +256,7 @@ export class ExploreModel implements TModel {
 
   public getSnapshot() {
     return this.charges
-      .filter((charge) => {
-        const p = charge.positionProperty.value;
-        return (
-          p.x >= FIELD_BOUNDS.minX && p.x <= FIELD_BOUNDS.maxX && p.y >= FIELD_BOUNDS.minY && p.y <= FIELD_BOUNDS.maxY
-        );
-      })
+      .filter((charge) => this.fieldBoundsProperty.value.containsPoint(charge.positionProperty.value))
       .map((charge) => ({
         q: charge.q,
         x: charge.positionProperty.value.x,

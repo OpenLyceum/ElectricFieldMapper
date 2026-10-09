@@ -13,7 +13,10 @@ import {
 const dipole = [
   { x: -1, y: 0, q: 1 },
   { x: 1, y: 0, q: -1 },
-];
+] as const;
+
+const nearCharge = (point: { x: number; y: number } | undefined, charge: { x: number; y: number }): boolean =>
+  !!point && Math.hypot(point.x - charge.x, point.y - charge.y) < 0.3;
 
 describe("electrostatic field", () => {
   it("obeys superposition and points from positive to negative charge", () => {
@@ -39,6 +42,26 @@ describe("electrostatic field", () => {
 
   it("generates automatic lines for a single negative charge", () => {
     expect(automaticFieldLines([{ x: 0, y: 0, q: -1 }], FIELD_BOUNDS)).toHaveLength(12);
+  });
+
+  it.each([12, 20])("balances dipole lines and draws incoming lines from the edge at density %i", (count) => {
+    const lines = automaticFieldLines(dipole, FIELD_BOUNDS, count);
+    expect(lines.filter((line) => nearCharge(line[0], dipole[0]))).toHaveLength(count);
+    expect(lines.filter((line) => nearCharge(line.at(-1), dipole[1]))).toHaveLength(count);
+    expect(lines.some((line) => !nearCharge(line[0], dipole[0]) && nearCharge(line.at(-1), dipole[1]))).toBe(true);
+  });
+
+  it.each([
+    [2, -1, 24, 12],
+    [1, -2, 12, 24],
+  ])("scales lines with charge magnitudes %i and %i", (positive, negative, sourceCount, sinkCount) => {
+    const charges = [
+      { x: -1.5, y: 0, q: positive },
+      { x: 1.5, y: 0, q: negative },
+    ];
+    const lines = automaticFieldLines(charges, FIELD_BOUNDS);
+    expect(lines.filter((line) => nearCharge(line[0], { x: -1.5, y: 0 }))).toHaveLength(sourceCount);
+    expect(lines.filter((line) => nearCharge(line.at(-1), { x: 1.5, y: 0 }))).toHaveLength(sinkCount);
   });
 });
 

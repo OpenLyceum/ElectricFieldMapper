@@ -29,11 +29,13 @@ describe("ExploreModel tools", () => {
     model.addSensor({ x: 0, y: 1 });
     model.voltmeterActiveProperty.value = true;
     model.showVoltageProperty.value = true;
+    model.showValuesProperty.value = true;
     model.addEquipotentialAtVoltmeter();
     model.reset();
     expect(model.sensors.length).toBe(0);
     expect(model.voltmeterActiveProperty.value).toBe(false);
     expect(model.showVoltageProperty.value).toBe(false);
+    expect(model.showValuesProperty.value).toBe(false);
     expect(model.equipotentialSeeds).toHaveLength(0);
     expect(model.charges.length).toBe(2);
   });

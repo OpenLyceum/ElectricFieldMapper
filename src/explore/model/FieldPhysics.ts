@@ -116,19 +116,77 @@ export function traceFieldLine(charges: readonly Charge[], seed: Point, bounds: 
   return [...backward, seed, ...forward];
 }
 
-/** Seed evenly around source charges; for all-negative configurations, trace backward from sinks. */
-export function automaticFieldLines(charges: readonly Charge[], bounds: FieldBounds, count = 12): Point[][] {
-  const sources = charges.some((charge) => charge.q > 0) ? charges.filter((charge) => charge.q > 0) : charges;
-  const lines: Point[][] = [];
-  for (const charge of sources) {
-    for (let i = 0; i < count; i++) {
-      const angle = (2 * Math.PI * i) / count;
-      const seed = { x: charge.x + 0.18 * Math.cos(angle), y: charge.y + 0.18 * Math.sin(angle) };
+function nearCharge(point: Point, charge: Charge): boolean {
+  return Math.hypot(point.x - charge.x, point.y - charge.y) < 2 * CHARGE_RADIUS;
+}
+
+/** Trace enough lines that enter a sink from outside the board to fill its remaining count. */
+function incomingLines(
+  charges: readonly Charge[],
+  sink: Charge,
+  bounds: FieldBounds,
+  lineCount: number,
+  needed: number,
+): Point[][] {
+  const candidates: { angle: number; line: Point[] }[] = [];
+  // The first pass keeps the familiar angles. Offset passes supply more edge lines when
+  // unequal charges send a different fraction of their source lines into this sink.
+  for (let pass = 0; pass < 4 && candidates.length < needed; pass++) {
+    for (let i = 0; i < lineCount; i++) {
+      const angle = (2 * Math.PI * (i + pass / 4)) / lineCount;
+      const seed = { x: sink.x + 0.18 * Math.cos(angle), y: sink.y + 0.18 * Math.sin(angle) };
       const line = traceFieldLine(charges, seed, bounds);
-      if (line.length > 1) {
-        lines.push(line);
+      const first = line[0];
+      if (line.length > 1 && first && !charges.some((source) => source.q > 0 && nearCharge(first, source))) {
+        candidates.push({ angle, line });
       }
     }
+  }
+  candidates.sort((a, b) => a.angle - b.angle);
+  const selectedCount = Math.min(needed, candidates.length);
+  const selected: Point[][] = [];
+  for (let i = 0; i < selectedCount; i++) {
+    const candidate = candidates[Math.floor(((i + 0.5) * candidates.length) / selectedCount)];
+    if (candidate) {
+      selected.push(candidate.line);
+    }
+  }
+  return selected;
+}
+
+/** Seed around sources and fill each sink's remaining lines from the board edge. */
+export function automaticFieldLines(charges: readonly Charge[], bounds: FieldBounds, count = 12): Point[][] {
+  const lines: Point[][] = [];
+  const sinks = charges.filter((charge) => charge.q < 0);
+  const arrivals = sinks.map(() => 0);
+
+  for (const sourceCharge of charges.filter((charge) => charge.q > 0)) {
+    const lineCount = Math.round(count * sourceCharge.q);
+    for (let i = 0; i < lineCount; i++) {
+      const angle = (2 * Math.PI * i) / lineCount;
+      const seed = {
+        x: sourceCharge.x + 0.18 * Math.cos(angle),
+        y: sourceCharge.y + 0.18 * Math.sin(angle),
+      };
+      const line = traceFieldLine(charges, seed, bounds);
+      const last = line.at(-1);
+      if (line.length > 1 && last) {
+        lines.push(line);
+        const sinkIndex = sinks.findIndex((sink) => nearCharge(last, sink));
+        if (sinkIndex >= 0) {
+          arrivals[sinkIndex] = (arrivals[sinkIndex] ?? 0) + 1;
+        }
+      }
+    }
+  }
+
+  for (const [sinkIndex, charge] of sinks.entries()) {
+    const lineCount = Math.round(count * -charge.q);
+    const needed = Math.max(0, lineCount - (arrivals[sinkIndex] ?? 0));
+    if (needed === 0) {
+      continue;
+    }
+    lines.push(...incomingLines(charges, charge, bounds, lineCount, needed));
   }
   return lines;
 }

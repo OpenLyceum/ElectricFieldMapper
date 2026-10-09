@@ -58,6 +58,7 @@
     "showVectors": "Field vectors",
     "showLines": "Field lines",
     "showVoltage": "Voltage",
+    "showValues": "Values",
     "automaticLines": "Automatic lines",
     "showGrid": "Grid",
     "draw": "Draw lines",

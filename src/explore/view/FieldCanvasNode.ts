@@ -2,9 +2,8 @@ import type { Bounds2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode } from "scenerystack/scenery";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
-import { GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
+import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
-import { FIELD_BOUNDS } from "../model/ExploreModel.js";
 import {
   automaticFieldLines,
   electricField,
@@ -21,16 +20,27 @@ type Charges = ReturnType<ExploreModel["getSnapshot"]>;
 /** Model metres per voltage-map cell; the coarse image is smoothed when scaled up. */
 const VOLTAGE_CELL = 0.05;
 
-/** Draws the voltage map, grid, equipotentials, vector samples, and continuous electric field lines. */
+/** Spacing of the sampled field arrows (metres); samples sit midway between major grid lines. */
+const VECTOR_SPACING = 0.5;
+
+/**
+ * Draws the voltage map, grid, equipotentials, vector samples, and continuous electric field lines
+ * over the whole visible field, which grows and shrinks with the browser window.
+ */
 export class FieldCanvasNode extends CanvasNode {
   private readonly repaint = (): void => this.invalidatePaint();
   private readonly model: ExploreModel;
   private readonly mvt: ModelViewTransform2;
   private voltageCanvas: HTMLCanvasElement | null = null;
-  public constructor(model: ExploreModel, mvt: ModelViewTransform2, canvasBounds: Bounds2) {
-    super({ canvasBounds });
+  private readonly updateBounds = (bounds: Bounds2): void => {
+    this.canvasBounds = this.mvt.modelToViewBounds(bounds);
+    this.invalidatePaint();
+  };
+  public constructor(model: ExploreModel, mvt: ModelViewTransform2) {
+    super();
     this.model = model;
     this.mvt = mvt;
+    model.fieldBoundsProperty.link(this.updateBounds);
     model.changeCountProperty.link(this.repaint);
     model.showVectorsProperty.link(this.repaint);
     model.showLinesProperty.link(this.repaint);
@@ -41,6 +51,7 @@ export class FieldCanvasNode extends CanvasNode {
     ElectricFieldMapperColors.fieldArrowColorProperty.link(this.repaint);
     ElectricFieldMapperColors.fieldLineColorProperty.link(this.repaint);
     model.showVoltageProperty.link(this.repaint);
+    model.showValuesProperty.link(this.repaint);
     ElectricFieldMapperColors.playAreaColorProperty.link(this.repaint);
     ElectricFieldMapperColors.potentialPositiveColorProperty.link(this.repaint);
     ElectricFieldMapperColors.potentialNegativeColorProperty.link(this.repaint);
@@ -49,44 +60,41 @@ export class FieldCanvasNode extends CanvasNode {
 
   public override paintCanvas(ctx: CanvasRenderingContext2D): void {
     const charges = this.model.getSnapshot();
-    const mvt = this.mvt;
-    const left = mvt.modelToViewX(FIELD_BOUNDS.minX);
-    const right = mvt.modelToViewX(FIELD_BOUNDS.maxX);
-    const top = mvt.modelToViewY(FIELD_BOUNDS.minY);
-    const bottom = mvt.modelToViewY(FIELD_BOUNDS.maxY);
+    const bounds = this.model.fieldBoundsProperty.value;
+    const view = this.mvt.modelToViewBounds(bounds);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(left, top, right - left, bottom - top);
+    ctx.rect(view.minX, view.minY, view.width, view.height);
     ctx.clip();
 
     if (this.model.showVoltageProperty.value) {
-      this.drawVoltageMap(ctx, charges, left, right, top, bottom);
+      this.drawVoltageMap(ctx, charges, bounds, view);
     }
 
     if (this.model.showGridProperty.value) {
-      this.drawGrid(ctx, left, right, top, bottom);
+      this.drawGrid(ctx, bounds, view);
     }
 
     if (this.model.showLinesProperty.value && charges.length > 0) {
-      this.drawFieldLines(ctx, charges);
+      this.drawFieldLines(ctx, charges, bounds);
     }
 
     if (this.model.equipotentialSeeds.length > 0 && charges.length > 0) {
-      this.drawEquipotentials(ctx, charges);
+      this.drawEquipotentials(ctx, charges, bounds);
     }
 
     if (this.model.showVectorsProperty.value) {
-      this.drawVectors(ctx, charges);
+      this.drawVectors(ctx, charges, bounds);
     }
     ctx.restore();
   }
 
-  private drawFieldLines(ctx: CanvasRenderingContext2D, charges: Charges): void {
+  private drawFieldLines(ctx: CanvasRenderingContext2D, charges: Charges, bounds: Bounds2): void {
     const lines = this.model.automaticLinesProperty.value
-      ? automaticFieldLines(charges, FIELD_BOUNDS, this.model.denseFieldLinesProperty.value ? 20 : 12)
+      ? automaticFieldLines(charges, bounds, this.model.denseFieldLinesProperty.value ? 20 : 12)
       : [];
     for (const seed of this.model.seedPoints) {
-      lines.push(traceFieldLine(charges, seed, FIELD_BOUNDS));
+      lines.push(traceFieldLine(charges, seed, bounds));
     }
     ctx.strokeStyle = ElectricFieldMapperColors.fieldLineColorProperty.value.toCSS();
     ctx.fillStyle = ctx.strokeStyle;
@@ -96,13 +104,16 @@ export class FieldCanvasNode extends CanvasNode {
     }
   }
 
-  private drawVectors(ctx: CanvasRenderingContext2D, charges: Charges): void {
+  private drawVectors(ctx: CanvasRenderingContext2D, charges: Charges, bounds: Bounds2): void {
     const mvt = this.mvt;
     ctx.strokeStyle = ElectricFieldMapperColors.fieldArrowColorProperty.value.toCSS();
     ctx.fillStyle = ctx.strokeStyle;
     ctx.lineWidth = 1.6;
-    for (let y = FIELD_BOUNDS.minY + 0.25; y < FIELD_BOUNDS.maxY; y += 0.5) {
-      for (let x = FIELD_BOUNDS.minX + 0.25; x < FIELD_BOUNDS.maxX; x += 0.5) {
+    // Samples stay on a fixed lattice so resizing the window does not shift them.
+    const firstX = (Math.ceil(bounds.minX / VECTOR_SPACING - 0.5) + 0.5) * VECTOR_SPACING;
+    const firstY = (Math.ceil(bounds.minY / VECTOR_SPACING - 0.5) + 0.5) * VECTOR_SPACING;
+    for (let y = firstY; y < bounds.maxY; y += VECTOR_SPACING) {
+      for (let x = firstX; x < bounds.maxX; x += VECTOR_SPACING) {
         const e = electricField(charges, { x, y });
         const magnitude = Math.hypot(e.x, e.y);
         if (!Number.isFinite(magnitude) || magnitude < 0.05) {
@@ -117,18 +128,16 @@ export class FieldCanvasNode extends CanvasNode {
     ctx.globalAlpha = 1;
   }
 
-  private drawVoltageMap(
-    ctx: CanvasRenderingContext2D,
-    charges: Charges,
-    left: number,
-    right: number,
-    top: number,
-    bottom: number,
-  ): void {
-    const columns = Math.round((FIELD_BOUNDS.maxX - FIELD_BOUNDS.minX) / VOLTAGE_CELL);
-    const rows = Math.round((FIELD_BOUNDS.maxY - FIELD_BOUNDS.minY) / VOLTAGE_CELL);
+  private drawVoltageMap(ctx: CanvasRenderingContext2D, charges: Charges, bounds: Bounds2, view: Bounds2): void {
+    const columns = Math.ceil(bounds.width / VOLTAGE_CELL);
+    const rows = Math.ceil(bounds.height / VOLTAGE_CELL);
+    if (columns < 1 || rows < 1) {
+      return;
+    }
     if (!this.voltageCanvas) {
       this.voltageCanvas = document.createElement("canvas");
+    }
+    if (this.voltageCanvas.width !== columns || this.voltageCanvas.height !== rows) {
       this.voltageCanvas.width = columns;
       this.voltageCanvas.height = rows;
     }
@@ -142,9 +151,9 @@ export class FieldCanvasNode extends CanvasNode {
     const negative = ElectricFieldMapperColors.potentialNegativeColorProperty.value;
     for (let row = 0; row < rows; row++) {
       // The board transform does not flip y, so image rows and model y both run downward.
-      const y = FIELD_BOUNDS.minY + (row + 0.5) * VOLTAGE_CELL;
+      const y = bounds.minY + (row + 0.5) * VOLTAGE_CELL;
       for (let column = 0; column < columns; column++) {
-        const x = FIELD_BOUNDS.minX + (column + 0.5) * VOLTAGE_CELL;
+        const x = bounds.minX + (column + 0.5) * VOLTAGE_CELL;
         const [r, g, b] = potentialRGB(electricPotential(charges, { x, y }), zero, positive, negative);
         const offset = 4 * (row * columns + column);
         image.data[offset] = r;
@@ -155,17 +164,20 @@ export class FieldCanvasNode extends CanvasNode {
     }
     voltageContext.putImageData(image, 0, 0);
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(this.voltageCanvas, left, top, right - left, bottom - top);
+    // Whole cells may overhang the field; the clip trims them.
+    const cellWidth = this.mvt.modelToViewDeltaX(VOLTAGE_CELL);
+    const cellHeight = Math.abs(this.mvt.modelToViewDeltaY(VOLTAGE_CELL));
+    ctx.drawImage(this.voltageCanvas, view.minX, view.minY, columns * cellWidth, rows * cellHeight);
   }
 
-  private drawEquipotentials(ctx: CanvasRenderingContext2D, charges: Charges): void {
+  private drawEquipotentials(ctx: CanvasRenderingContext2D, charges: Charges, bounds: Bounds2): void {
     const color = ElectricFieldMapperColors.equipotentialLineColorProperty.value.toCSS();
     ctx.lineWidth = 1.8;
     ctx.font = "13px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const seed of this.model.equipotentialSeeds) {
-      const line = traceEquipotential(charges, seed, FIELD_BOUNDS);
+      const line = traceEquipotential(charges, seed, bounds);
       if (line.length < 2) {
         continue;
       }
@@ -181,6 +193,9 @@ export class FieldCanvasNode extends CanvasNode {
         }
       });
       ctx.stroke();
+      if (!this.model.showValuesProperty.value) {
+        continue;
+      }
       // Label each line with its voltage at the point where it was plotted.
       const label = `${formatSignificant(electricPotential(charges, seed))} V`;
       const px = this.mvt.modelToViewX(seed.x);
@@ -193,24 +208,37 @@ export class FieldCanvasNode extends CanvasNode {
     }
   }
 
-  private drawGrid(ctx: CanvasRenderingContext2D, left: number, right: number, top: number, bottom: number): void {
+  /**
+   * Draws minor and major grid lines across the whole visible field. Lines sit at fixed multiples of the
+   * spacing from the origin, so the grid simply continues as the window grows.
+   */
+  private drawGrid(ctx: CanvasRenderingContext2D, bounds: Bounds2, view: Bounds2): void {
+    const minorSpacing = GRID_SPACING_M / GRID_MINOR_LINES_PER_MAJOR;
+    const minI = Math.ceil(bounds.minX / minorSpacing);
+    const maxI = Math.floor(bounds.maxX / minorSpacing);
+    const minJ = Math.ceil(bounds.minY / minorSpacing);
+    const maxJ = Math.floor(bounds.maxY / minorSpacing);
+    const majorPath = new Path2D();
+    const minorPath = new Path2D();
+    for (let i = minI; i <= maxI; i++) {
+      const path = i % GRID_MINOR_LINES_PER_MAJOR === 0 ? majorPath : minorPath;
+      const px = this.mvt.modelToViewX(i * minorSpacing);
+      path.moveTo(px, view.minY);
+      path.lineTo(px, view.maxY);
+    }
+    for (let j = minJ; j <= maxJ; j++) {
+      const path = j % GRID_MINOR_LINES_PER_MAJOR === 0 ? majorPath : minorPath;
+      const py = this.mvt.modelToViewY(j * minorSpacing);
+      path.moveTo(view.minX, py);
+      path.lineTo(view.maxX, py);
+    }
     ctx.strokeStyle = ElectricFieldMapperColors.gridColorProperty.value.toCSS();
-    ctx.globalAlpha = 0.22;
+    ctx.globalAlpha = 0.12;
     ctx.lineWidth = 1;
-    for (let x = FIELD_BOUNDS.minX; x <= FIELD_BOUNDS.maxX; x += GRID_SPACING_M) {
-      const px = this.mvt.modelToViewX(x);
-      ctx.beginPath();
-      ctx.moveTo(px, top);
-      ctx.lineTo(px, bottom);
-      ctx.stroke();
-    }
-    for (let y = FIELD_BOUNDS.minY; y <= FIELD_BOUNDS.maxY; y += GRID_SPACING_M) {
-      const py = this.mvt.modelToViewY(y);
-      ctx.beginPath();
-      ctx.moveTo(left, py);
-      ctx.lineTo(right, py);
-      ctx.stroke();
-    }
+    ctx.stroke(minorPath);
+    ctx.globalAlpha = 0.28;
+    ctx.lineWidth = 1.6;
+    ctx.stroke(majorPath);
     ctx.globalAlpha = 1;
   }
 
@@ -265,6 +293,7 @@ export class FieldCanvasNode extends CanvasNode {
   }
 
   public override dispose(): void {
+    this.model.fieldBoundsProperty.unlink(this.updateBounds);
     this.model.changeCountProperty.unlink(this.repaint);
     this.model.showVectorsProperty.unlink(this.repaint);
     this.model.showLinesProperty.unlink(this.repaint);
@@ -275,6 +304,7 @@ export class FieldCanvasNode extends CanvasNode {
     ElectricFieldMapperColors.fieldArrowColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.fieldLineColorProperty.unlink(this.repaint);
     this.model.showVoltageProperty.unlink(this.repaint);
+    this.model.showValuesProperty.unlink(this.repaint);
     ElectricFieldMapperColors.playAreaColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.potentialPositiveColorProperty.unlink(this.repaint);
     ElectricFieldMapperColors.potentialNegativeColorProperty.unlink(this.repaint);

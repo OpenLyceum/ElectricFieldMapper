@@ -3,7 +3,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { KeyboardListener, Node, RichDragListener } from "scenerystack/scenery";
 import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import { type ExploreModel, KEYBOARD_DRAG_BOUNDS_PROPERTY, type PointCharge } from "../model/ExploreModel.js";
+import type { ExploreModel, PointCharge } from "../model/ExploreModel.js";
 
 export class ChargeNode extends Node {
   public readonly dragListener: RichDragListener;
@@ -39,7 +39,7 @@ export class ChargeNode extends Node {
       keyboardDragListenerOptions: {
         dragSpeed: 90,
         shiftDragSpeed: 30,
-        dragBoundsProperty: KEYBOARD_DRAG_BOUNDS_PROPERTY,
+        dragBoundsProperty: model.keyboardDragBoundsProperty,
       },
       end: (event) => {
         if (event) {

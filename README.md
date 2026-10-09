@@ -7,10 +7,10 @@ A SceneryStack simulation for exploring electric fields created by point charges
 - Add, drag, and remove positive and negative 1 nC charges, drawn as the red and blue spheres of PhET's *Charges and Fields*.
 - Choose a charge configuration or build your own; optionally snap charges to the half-metre grid.
 - View Coulomb field vectors and continuous electric field lines together or separately.
-- Generate lines around positive charges automatically, or place individual line seeds anywhere on the board.
-- Drag any number of electric field sensors from the box; each shows the E vector as a red arrow with its strength in V/m and direction in degrees. Drag them back to remove them.
+- Generate lines around positive and negative charges automatically in proportion to charge magnitude, or place individual line seeds anywhere on the board.
+- Drag any number of electric field sensors from the box; each shows the E vector as a red arrow. Turn on **Values** to show its strength in V/m and direction in degrees. Drag them back to remove them.
 - Turn on **Voltage** to colour the board by electric potential: red for positive, blue for negative.
-- Drag the voltmeter out of the toolbox to read potential in V at its crosshair, and plot or erase labelled equipotential lines.
+- Drag the voltmeter out of the toolbox to read potential in V at its crosshair, and plot or erase equipotential lines. **Values** also labels those lines with their voltage.
 - Toggle the grid and use projector mode, French, or Spanish from Preferences.
 - Keyboard support for dragging charges, sensors, and the voltmeter, named controls, and a live screen summary.
 

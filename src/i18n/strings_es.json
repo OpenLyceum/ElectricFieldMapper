@@ -58,6 +58,7 @@
     "showVectors": "Vectores de campo",
     "showLines": "Líneas de campo",
     "showVoltage": "Voltaje",
+    "showValues": "Valores",
     "automaticLines": "Líneas automáticas",
     "showGrid": "Cuadrícula",
     "draw": "Dibujar líneas",

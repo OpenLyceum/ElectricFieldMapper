@@ -58,6 +58,7 @@
     "showVectors": "Vecteurs du champ",
     "showLines": "Lignes de champ",
     "showVoltage": "Tension",
+    "showValues": "Valeurs",
     "automaticLines": "Lignes automatiques",
     "showGrid": "Grille",
     "draw": "Tracer des lignes",
