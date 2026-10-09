@@ -9,9 +9,9 @@ import {
 } from "scenerystack/axon";
 import { Bounds2, Vector2, Vector2Property } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
-import { GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
+import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import { CHARGE_PRESETS, type ChargePreset } from "./ChargePresets.js";
-import { CHARGE_RADIUS, type FieldBounds, type Point } from "./FieldPhysics.js";
+import { CHARGE_RADIUS, combineCoincidentCharges, type FieldBounds, type Point } from "./FieldPhysics.js";
 
 /** Initial field area, before the view reports how much of the model the browser window shows. */
 export const FIELD_BOUNDS: FieldBounds = { minX: -4, maxX: 4, minY: -3, maxY: 3 };
@@ -24,6 +24,10 @@ const KEYBOARD_DRAG_MARGIN = 0.18;
 
 /** Model position where the voltmeter appears when placed from the keyboard. */
 const VOLTMETER_DEFAULT_POSITION = new Vector2(0, 1.55);
+
+/** Measuring tape when placed from the keyboard: one major grid square, clear of the dipole. */
+const MEASURING_TAPE_BASE = new Vector2(0, 1.2);
+const MEASURING_TAPE_TIP = new Vector2(GRID_SPACING_M, 1.2);
 
 export class PointCharge {
   public readonly positionProperty: Vector2Property;
@@ -56,8 +60,9 @@ export class ExploreModel implements TModel {
   public readonly showLinesProperty = new BooleanProperty(true);
   public readonly showVoltageProperty = new BooleanProperty(false);
   /**
-   * Numeric labels on field sensors (strength and angle) and on equipotential curves.
-   * Off by default, as in Charges and Fields. The voltmeter readout stays visible either way.
+   * Numeric labels on field sensors (strength and angle) and on equipotential curves,
+   * and the one-metre scale arrow on the grid. Off by default, as in Charges and Fields.
+   * The voltmeter and measuring-tape readouts stay visible either way.
    */
   public readonly showValuesProperty = new BooleanProperty(false);
   public readonly showGridProperty = new BooleanProperty(true);
@@ -69,6 +74,10 @@ export class ExploreModel implements TModel {
   /** True while the voltmeter is out of its toolbox and on the board. */
   public readonly voltmeterActiveProperty = new BooleanProperty(false);
   public readonly voltmeterPositionProperty = new Vector2Property(VOLTMETER_DEFAULT_POSITION);
+  /** True while the measuring tape is out of its toolbox and on the board. */
+  public readonly measuringTapeActiveProperty = new BooleanProperty(false);
+  public readonly measuringTapeBasePositionProperty = new Vector2Property(MEASURING_TAPE_BASE);
+  public readonly measuringTapeTipPositionProperty = new Vector2Property(MEASURING_TAPE_TIP);
   public readonly seedPoints: Point[] = [];
   public readonly equipotentialSeeds: Point[] = [];
   /** The visible part of the field (model metres); the view updates it as the window resizes. */
@@ -103,6 +112,7 @@ export class ExploreModel implements TModel {
             charge.positionProperty.value = snapped;
           }
         }
+        this.snapMeasuringTape();
       }
     });
   }
@@ -176,6 +186,39 @@ export class ExploreModel implements TModel {
       constrain(sensor.positionProperty);
     }
     constrain(this.voltmeterPositionProperty);
+    constrain(this.measuringTapeBasePositionProperty);
+    constrain(this.measuringTapeTipPositionProperty);
+  }
+
+  /**
+   * Snaps the measuring tape to minor grid lines, as Charges and Fields does when Snap to Grid is on
+   * and the grid is visible.
+   */
+  public snapMeasuringTape(end: "both" | "tip" = "both"): void {
+    if (!(this.snapToGridProperty.value && this.showGridProperty.value)) {
+      return;
+    }
+    if (end === "both") {
+      this.snapTapeEnd(this.measuringTapeBasePositionProperty);
+    }
+    this.snapTapeEnd(this.measuringTapeTipPositionProperty);
+  }
+
+  private snapTapeEnd(positionProperty: Vector2Property): void {
+    const snapped = this.snapToMinorGrid(positionProperty.value);
+    if (!snapped.equals(positionProperty.value)) {
+      positionProperty.value = snapped;
+    }
+  }
+
+  private snapToMinorGrid(point: Point): Vector2 {
+    const spacing = GRID_SPACING_M / GRID_MINOR_LINES_PER_MAJOR;
+    const bounds = this.fieldBoundsProperty.value;
+    const snap = (value: number, min: number, max: number): number => {
+      const rounded = Math.round(Math.round(value / spacing) * spacing * 1e6) / 1e6;
+      return Math.max(min, Math.min(max, rounded));
+    };
+    return new Vector2(snap(point.x, bounds.minX, bounds.maxX), snap(point.y, bounds.minY, bounds.maxY));
   }
 
   /** Replace charges with a named example. Drawn lines are cleared because their seeds refer to the old arrangement. */
@@ -251,23 +294,27 @@ export class ExploreModel implements TModel {
     this.automaticLinesProperty.reset();
     this.voltmeterActiveProperty.reset();
     this.voltmeterPositionProperty.reset();
+    this.measuringTapeActiveProperty.reset();
+    this.measuringTapeBasePositionProperty.reset();
+    this.measuringTapeTipPositionProperty.reset();
     this.notifyChanged();
   }
 
+  /** Net field sources; the individual draggable charges remain in the model. */
   public getSnapshot() {
-    return this.charges
-      .filter((charge) => this.fieldBoundsProperty.value.containsPoint(charge.positionProperty.value))
-      .map((charge) => ({
-        q: charge.q,
-        x: charge.positionProperty.value.x,
-        y: charge.positionProperty.value.y,
-      }));
+    return combineCoincidentCharges(
+      this.charges
+        .filter((charge) => this.fieldBoundsProperty.value.containsPoint(charge.positionProperty.value))
+        .map((charge) => ({
+          q: charge.q,
+          x: charge.positionProperty.value.x,
+          y: charge.positionProperty.value.y,
+        })),
+    );
   }
   public isNearCharge(point: Point): boolean {
-    return this.charges.some(
-      (charge) =>
-        Math.hypot(point.x - charge.positionProperty.value.x, point.y - charge.positionProperty.value.y) <
-        CHARGE_RADIUS * 1.3,
+    return this.getSnapshot().some(
+      (charge) => Math.hypot(point.x - charge.x, point.y - charge.y) < CHARGE_RADIUS * 1.3,
     );
   }
   public step(_dt: number): void {

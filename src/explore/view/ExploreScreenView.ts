@@ -1,4 +1,4 @@
-import type { TReadOnlyProperty } from "scenerystack/axon";
+import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { type Bounds2, Vector2, type Vector2Property } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
@@ -13,12 +13,13 @@ import {
   Text,
   VBox,
 } from "scenerystack/scenery";
-import { ResetAllButton } from "scenerystack/scenery-phet";
+import { InfoButton, MeasuringTapeNode, type MeasuringTapeUnits, ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { Checkbox, ComboBox, RectangularPushButton } from "scenerystack/sun";
 import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
 import {
   ELECTRIC_FIELD_MAPPER_COMBO_BOX_OPTIONS,
+  FLAT_BUTTON_APPEARANCE_OPTIONS,
   FLAT_PANEL_PUSH_BUTTON_OPTIONS,
   FLAT_RESET_ALL_BUTTON_OPTIONS,
   LIGHT_SURFACE_TEXT_FILL,
@@ -32,6 +33,9 @@ import {
   CHARGE_TOOLBOX_ICON_Y,
   CHARGE_TOOLBOX_WIDTH,
   GRID_SPACING_M,
+  INFO_BUTTON_POINTER_AREA_DILATION,
+  INFO_BUTTON_SCALE,
+  INFO_RESET_BUTTON_SPACING,
   SCREEN_VIEW_MARGIN,
 } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -45,6 +49,8 @@ import { ChargeNode } from "./ChargeNode.js";
 import { createFieldSensorDisk, ElectricFieldSensorNode } from "./ElectricFieldSensorNode.js";
 import { ExploreScreenSummaryContent } from "./ExploreScreenSummaryContent.js";
 import { FieldCanvasNode } from "./FieldCanvasNode.js";
+import { FieldLinesInfoDialog } from "./FieldLinesInfoDialog.js";
+import { GridScaleNode } from "./GridScaleNode.js";
 import { createVoltmeterIcon, VoltmeterNode } from "./VoltmeterNode.js";
 
 export type ExploreScreenViewOptions = ScreenViewOptions;
@@ -106,6 +112,7 @@ export class ExploreScreenView extends ScreenView {
     board.addInputListener(boardPress);
     this.addChild(board);
     this.addChild(new FieldCanvasNode(model, mvt));
+    this.addChild(new GridScaleNode(model, mvt));
 
     // Both boxes are created below; drop handlers only run after construction.
     let chargeBox: Node | null = null;
@@ -188,6 +195,71 @@ export class ExploreScreenView extends ScreenView {
       clampToBoard(model.voltmeterPositionProperty, model.fieldBoundsProperty.value, 0.05);
     });
     this.addChild(voltmeter);
+
+    // ── Measuring tape ─────────────────────────────────────────────────────────
+    // Pulled from the toolbox at a fixed length; either end can then be dragged, and the base
+    // returns to the toolbox when it is dropped there.
+    const tapeUnitsProperty = new DerivedProperty(
+      [ui.centimeterUnitStringProperty],
+      (name): MeasuringTapeUnits => ({ name, multiplier: 100 }),
+    );
+    const tapeTipOffset = model.measuringTapeTipPositionProperty.value.minus(
+      model.measuringTapeBasePositionProperty.value,
+    );
+    const measuringTapeNode = new MeasuringTapeNode(tapeUnitsProperty, {
+      visibleProperty: model.measuringTapeActiveProperty,
+      modelViewTransform: mvt,
+      basePositionProperty: model.measuringTapeBasePositionProperty,
+      tipPositionProperty: model.measuringTapeTipPositionProperty,
+      textColor: ElectricFieldMapperColors.measuringTapeTextColorProperty,
+      textBackgroundColor: ElectricFieldMapperColors.measuringTapeReadoutBackgroundColorProperty,
+      significantFigures: 1,
+      dragBounds: model.fieldBoundsProperty.value,
+    });
+    const focusTape = (node: Node): void => {
+      const visit = (current: Node): boolean => {
+        if (current.focusable) {
+          current.focus();
+          return true;
+        }
+        return current.children.some(visit);
+      };
+      visit(node);
+    };
+    const putTapeAway = (): void => {
+      model.measuringTapeActiveProperty.value = false;
+    };
+    const addTapeDelete = (node: Node): void => {
+      if (node.focusable) {
+        node.addInputListener(
+          new KeyboardListener({
+            keys: ["delete", "backspace"],
+            fire: putTapeAway,
+          }),
+        );
+      }
+      for (const child of node.children) {
+        addTapeDelete(child);
+      }
+    };
+    addTapeDelete(measuringTapeNode);
+    measuringTapeNode.isBaseUserControlledProperty.lazyLink((controlled) => {
+      if (controlled) {
+        return;
+      }
+      const baseBounds = measuringTapeNode.localToParentBounds(measuringTapeNode.getLocalBaseBounds());
+      if (toolBox && this.globalToLocalBounds(toolBox.getGlobalBounds()).intersectsBounds(baseBounds)) {
+        putTapeAway();
+        return;
+      }
+      model.snapMeasuringTape();
+    });
+    measuringTapeNode.isTipUserControlledProperty.lazyLink((controlled) => {
+      if (!controlled) {
+        model.snapMeasuringTape("tip");
+      }
+    });
+    this.addChild(measuringTapeNode);
 
     // ── Toolbox items ──────────────────────────────────────────────────────────
     /** Where keyboard-added items appear, staggered so they do not stack exactly. */
@@ -313,9 +385,42 @@ export class ExploreScreenView extends ScreenView {
     model.voltmeterActiveProperty.link((active) => {
       voltmeterItem.visible = !active;
     });
-    const toolBoxHeight = voltmeterIcon.height + 16;
-    voltmeterItem.centerX = CHARGE_TOOLBOX_WIDTH / 2;
-    voltmeterItem.top = 8;
+    const tapeIcon = MeasuringTapeNode.createIcon({ scale: 0.8 });
+    const tapeItem = toolboxItem(
+      tapeIcon,
+      null,
+      a11y.controls.measuringTapeStringProperty,
+      a11y.controls.takeMeasuringTapeStringProperty,
+      (event) => {
+        model.measuringTapeActiveProperty.value = true;
+        const initialViewPosition = this.globalToLocalPoint(event.pointer.point).minus(
+          measuringTapeNode.getLocalBaseCenter(),
+        );
+        model.measuringTapeBasePositionProperty.value = mvt.viewToModelPosition(initialViewPosition);
+        model.measuringTapeTipPositionProperty.value =
+          model.measuringTapeBasePositionProperty.value.plus(tapeTipOffset);
+        measuringTapeNode.startBaseDrag(event);
+      },
+      () => {
+        model.measuringTapeBasePositionProperty.reset();
+        model.measuringTapeTipPositionProperty.reset();
+        model.measuringTapeActiveProperty.value = true;
+        measuringTapeNode.setDragBounds(model.fieldBoundsProperty.value);
+        focusTape(measuringTapeNode);
+      },
+    );
+    model.measuringTapeActiveProperty.link((active) => {
+      tapeItem.visible = !active;
+    });
+    const toolsColumn = new VBox({
+      spacing: 12,
+      align: "center",
+      excludeInvisibleChildrenFromBounds: false,
+      children: [voltmeterItem, tapeItem],
+    });
+    const toolBoxHeight = toolsColumn.height + 16;
+    toolsColumn.centerX = CHARGE_TOOLBOX_WIDTH / 2;
+    toolsColumn.top = 8;
     toolBox = new Node({
       children: [
         new Rectangle(0, 0, CHARGE_TOOLBOX_WIDTH, toolBoxHeight, {
@@ -324,7 +429,7 @@ export class ExploreScreenView extends ScreenView {
           lineWidth: 2,
           cornerRadius: 5,
         }),
-        voltmeterItem,
+        toolsColumn,
       ],
     });
 
@@ -432,6 +537,7 @@ export class ExploreScreenView extends ScreenView {
     voltmeter.moveToFront();
     chargeLayer.moveToFront();
     sensorLayer.moveToFront();
+    measuringTapeNode.moveToFront();
 
     const hint = new Text(ui.hintStringProperty, {
       font: "14px sans-serif",
@@ -446,6 +552,16 @@ export class ExploreScreenView extends ScreenView {
       },
       accessibleName: a11y.controls.resetStringProperty,
     });
+    const infoDialog = new FieldLinesInfoDialog();
+    const infoButton = new InfoButton({
+      ...FLAT_BUTTON_APPEARANCE_OPTIONS,
+      scale: INFO_BUTTON_SCALE,
+      touchAreaDilation: INFO_BUTTON_POINTER_AREA_DILATION,
+      mouseAreaDilation: INFO_BUTTON_POINTER_AREA_DILATION,
+      listener: () => infoDialog.show(),
+      accessibleName: a11y.controls.infoStringProperty,
+    });
+    this.addChild(infoButton);
     this.addChild(reset);
 
     // A wider or taller window reveals more field, and the controls move out to its edges.
@@ -454,14 +570,19 @@ export class ExploreScreenView extends ScreenView {
       const fieldBounds = mvt.viewToModelBounds(visibleBounds).intersection(ENLARGED_FIELD_BOUNDS);
       model.fieldBoundsProperty.value = fieldBounds;
       model.keepItemsInField();
+      measuringTapeNode.setDragBounds(fieldBounds);
       panel.right = visibleBounds.maxX - SCREEN_VIEW_MARGIN;
       panel.top = visibleBounds.minY + SCREEN_VIEW_MARGIN - 6;
       reset.right = visibleBounds.maxX - SCREEN_VIEW_MARGIN;
       reset.bottom = visibleBounds.maxY - SCREEN_VIEW_MARGIN;
+      infoButton.right = reset.left - INFO_RESET_BUTTON_SPACING;
+      infoButton.centerY = reset.centerY;
       hint.maxWidth = Math.max(1, panel.left - visibleBounds.minX - 2 * SCREEN_VIEW_MARGIN);
       hint.left = visibleBounds.minX + SCREEN_VIEW_MARGIN;
       hint.bottom = visibleBounds.maxY - SCREEN_VIEW_MARGIN + 4;
     });
-    this.addChild(new Node({ pdomOrder: [chargeLayer, sensorLayer, voltmeter, panel, reset] }));
+    this.addChild(
+      new Node({ pdomOrder: [chargeLayer, sensorLayer, voltmeter, measuringTapeNode, panel, infoButton, reset] }),
+    );
   }
 }

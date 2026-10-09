@@ -7,10 +7,10 @@
     "explore": {
       "screenSummary": {
         "playArea": "Las cargas positivas y negativas crean un campo eléctrico. El tablero puede mostrar vectores, líneas de campo, un mapa de voltaje rojo y azul y líneas equipotenciales.",
-        "controlArea": "Arrastra cargas y sensores de campo de la caja al tablero, o devuélvelos para quitarlos. Arrastra el voltímetro desde las herramientas para medir el potencial y trazar equipotenciales. Cambia las capas y dibuja líneas.",
-        "interactionHint": "Arrastra una carga o un sensor de la caja al tablero. Devuélvelo a la caja para quitarlo. Activa Tocar para dibujar y toca el tablero."
+        "controlArea": "Arrastra cargas y sensores de campo de la caja al tablero, o devuélvelos para quitarlos. Arrastra el voltímetro o la cinta métrica desde las herramientas. Cambia las capas y dibuja líneas.",
+        "interactionHint": "Arrastra una carga o un sensor de la caja al tablero. Devuélvelo a la caja para quitarlo. Arrastra el voltímetro o la cinta métrica desde Herramientas. Activa Tocar para dibujar y toca el tablero."
       },
-      "currentDetails": "Las cargas están listas. Los sensores y el voltímetro están guardados.",
+      "currentDetails": "Las cargas están listas. Los sensores, el voltímetro y la cinta métrica están guardados.",
       "controls": {
         "playArea": "Tablero de campo. Al activar Tocar para dibujar, toca para colocar una línea de campo.",
         "positiveCharge": "Carga positiva de un nanoculombio",
@@ -23,9 +23,12 @@
         "voltmeter": "Voltímetro",
         "moveVoltmeter": "Arrastra o usa las flechas para medir el potencial en otro punto. Devuélvelo a las herramientas o pulsa Supr para guardarlo.",
         "takeVoltmeter": "Arrastra al tablero o pulsa Intro o Espacio para usar el voltímetro.",
+        "measuringTape": "Cinta métrica",
+        "takeMeasuringTape": "Arrastra al tablero o pulsa Intro o Espacio para usar la cinta métrica. Arrastra cualquiera de los extremos. Pulsa Supr para guardarla.",
         "plotEquipotential": "Trazar la equipotencial que pasa por la mira",
         "clearEquipotentials": "Borrar las equipotenciales",
         "chargePresets": "Configuraciones de cargas",
+        "info": "Información sobre las líneas de campo",
         "reset": "Restablecer todo"
       }
     }
@@ -65,12 +68,16 @@
     "drawMode": "Tocar para dibujar",
     "seedAtProbe": "Línea en el voltímetro",
     "clearLines": "Borrar líneas",
-    "hint": "Arrastra cargas y sensores de la caja al tablero y devuélvelos para quitarlos. Activa Tocar para dibujar y toca el tablero.",
+    "hint": "Arrastra cargas y sensores de la caja al tablero y devuélvelos para quitarlos. Arrastra el voltímetro o la cinta métrica desde Herramientas. Activa Tocar para dibujar y toca el tablero.",
     "fieldStrength": "Intensidad",
     "potential": "Potencial",
     "sensors": "Sensores",
     "tools": "Herramientas",
     "voltmeter": "Voltímetro",
-    "direction": "Dirección"
+    "direction": "Dirección",
+    "centimeterUnit": "cm",
+    "oneMeter": "1 metro",
+    "infoTitle": "Líneas de campo",
+    "infoBody": "Las líneas de campo eléctrico pueden unirse todas en un mismo punto de este tablero. En la realidad, las líneas que se encuentran así saldrían del plano y continuarían en la tercera dimensión, de modo que no permanecerían unidas en un solo punto. Esta simulación se dibuja en un plano bidimensional, y esa salida fuera del plano no se puede mostrar."
   }
 }

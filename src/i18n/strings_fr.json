@@ -7,10 +7,10 @@
     "explore": {
       "screenSummary": {
         "playArea": "Les charges positives et négatives créent un champ électrique. La zone peut afficher vecteurs, lignes de champ, une carte de tension rouge et bleue et des équipotentielles.",
-        "controlArea": "Glissez charges et capteurs de champ de la boîte vers la zone, ou ramenez-les pour les retirer. Glissez le voltmètre depuis les outils pour lire le potentiel et tracer des équipotentielles. Changez les affichages et tracez des lignes.",
-        "interactionHint": "Glissez une charge ou un capteur de la boîte vers la zone. Ramenez-le dans la boîte pour le retirer. Activez le tracé puis touchez la zone."
+        "controlArea": "Glissez charges et capteurs de champ de la boîte vers la zone, ou ramenez-les pour les retirer. Glissez le voltmètre ou le ruban à mesurer depuis les outils. Changez les affichages et tracez des lignes.",
+        "interactionHint": "Glissez une charge ou un capteur de la boîte vers la zone. Ramenez-le dans la boîte pour le retirer. Glissez le voltmètre ou le ruban à mesurer depuis Outils. Activez le tracé puis touchez la zone."
       },
-      "currentDetails": "Les charges sont prêtes. Les capteurs et le voltmètre sont rangés.",
+      "currentDetails": "Les charges sont prêtes. Les capteurs, le voltmètre et le ruban à mesurer sont rangés.",
       "controls": {
         "playArea": "Zone du champ. Quand le tracé est activé, touchez pour placer une ligne.",
         "positiveCharge": "Charge positive de un nanocoulomb",
@@ -23,9 +23,12 @@
         "voltmeter": "Voltmètre",
         "moveVoltmeter": "Glissez ou utilisez les flèches pour mesurer le potentiel ailleurs. Ramenez-le dans les outils ou appuyez sur Suppr pour le ranger.",
         "takeVoltmeter": "Glissez vers la zone ou appuyez sur Entrée ou Espace pour utiliser le voltmètre.",
+        "measuringTape": "Ruban à mesurer",
+        "takeMeasuringTape": "Glissez vers la zone ou appuyez sur Entrée ou Espace pour utiliser le ruban à mesurer. Glissez l’une ou l’autre extrémité. Appuyez sur Suppr pour le ranger.",
         "plotEquipotential": "Tracer l’équipotentielle passant par le réticule",
         "clearEquipotentials": "Effacer les équipotentielles",
         "chargePresets": "Configurations de charges",
+        "info": "Informations sur les lignes de champ",
         "reset": "Tout réinitialiser"
       }
     }
@@ -65,12 +68,16 @@
     "drawMode": "Toucher pour tracer",
     "seedAtProbe": "Ligne au voltmètre",
     "clearLines": "Effacer les lignes",
-    "hint": "Glissez charges et capteurs de la boîte vers la zone et ramenez-les pour les retirer. Activez le tracé puis touchez la zone.",
+    "hint": "Glissez charges et capteurs de la boîte vers la zone et ramenez-les pour les retirer. Glissez le voltmètre ou le ruban à mesurer depuis Outils. Activez le tracé puis touchez la zone.",
     "fieldStrength": "Intensité",
     "potential": "Potentiel",
     "sensors": "Capteurs",
     "tools": "Outils",
     "voltmeter": "Voltmètre",
-    "direction": "Direction"
+    "direction": "Direction",
+    "centimeterUnit": "cm",
+    "oneMeter": "1 mètre",
+    "infoTitle": "Lignes de champ",
+    "infoBody": "Les lignes de champ électrique peuvent toutes se rejoindre en un seul point sur cette zone. En réalité, des lignes qui se rencontrent ainsi quitteraient le plan et continueraient dans la troisième dimension, donc elles ne resteraient pas réunies en un seul point. Cette simulation est dessinée dans un plan à deux dimensions, et cette sortie hors du plan ne peut pas être montrée."
   }
 }

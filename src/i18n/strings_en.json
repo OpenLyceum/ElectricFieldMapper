@@ -7,10 +7,10 @@
     "explore": {
       "screenSummary": {
         "playArea": "Positive and negative charges create an electric field. The board can show field vectors, field lines, a red and blue voltage map, and equipotential lines.",
-        "controlArea": "Drag charges and electric field sensors from the box onto the board, or back to the box to remove them. Drag the voltmeter from the toolbox to read potential and plot equipotentials. Change the overlays and draw field lines.",
-        "interactionHint": "Drag a charge or sensor from the box onto the board. Drag it back to the box to remove it. Turn on Tap to draw, then tap the board to place field lines."
+        "controlArea": "Drag charges and electric field sensors from the box onto the board, or back to the box to remove them. Drag the voltmeter or the measuring tape from the toolbox. Change the overlays and draw field lines.",
+        "interactionHint": "Drag a charge or sensor from the box onto the board. Drag it back to the box to remove it. Drag the voltmeter or measuring tape from Tools. Turn on Tap to draw, then tap the board to place field lines."
       },
-      "currentDetails": "Charges are ready. Field sensors and the voltmeter are in their boxes.",
+      "currentDetails": "Charges are ready. Field sensors, the voltmeter, and the measuring tape are in their boxes.",
       "controls": {
         "playArea": "Field board. When Tap to draw is selected, tap to place a field line.",
         "positiveCharge": "Positive one nanocoulomb charge",
@@ -23,9 +23,12 @@
         "voltmeter": "Voltmeter",
         "moveVoltmeter": "Drag or use arrow keys to measure the potential elsewhere. Drag it to the toolbox or press Delete to put it away.",
         "takeVoltmeter": "Drag onto the board, or press Enter or Space to use the voltmeter.",
+        "measuringTape": "Measuring tape",
+        "takeMeasuringTape": "Drag onto the board, or press Enter or Space to use the measuring tape. Drag either end. Press Delete to put it away.",
         "plotEquipotential": "Plot equipotential line through the crosshair",
         "clearEquipotentials": "Erase equipotential lines",
         "chargePresets": "Charge configurations",
+        "info": "Information about field lines",
         "reset": "Reset all"
       }
     }
@@ -65,12 +68,16 @@
     "drawMode": "Tap to draw",
     "seedAtProbe": "Line at voltmeter",
     "clearLines": "Clear drawn lines",
-    "hint": "Drag charges and sensors from the box onto the board and back to remove them. Select Tap to draw, then tap the board.",
+    "hint": "Drag charges and sensors from the box onto the board and back to remove them. Drag the voltmeter or measuring tape from Tools. Select Tap to draw, then tap the board.",
     "fieldStrength": "Field strength",
     "potential": "Potential",
     "sensors": "Sensors",
     "tools": "Tools",
     "voltmeter": "Voltmeter",
-    "direction": "Direction"
+    "direction": "Direction",
+    "centimeterUnit": "cm",
+    "oneMeter": "1 meter",
+    "infoTitle": "Field lines",
+    "infoBody": "Electric field lines can all merge at one point on this board. In reality, lines that come together like that would leave the plane and continue in the third dimension, so they would not stay merged at a single point. This simulation is drawn in a two-dimensional plane, and that escape out of the plane cannot be shown."
   }
 }

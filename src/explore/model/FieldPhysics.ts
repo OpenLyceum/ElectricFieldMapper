@@ -8,7 +8,34 @@ export const CHARGE_RADIUS = 0.15; // m, visible disk and singularity cutoff.
 const FIELD_NULL_STOP_SCALE = 0.002; // m, below a screen pixel at the standard board scale.
 const FIELD_NULL_STEP_FRACTION = 0.45;
 
+/** Sum charges at exactly the same position before applying singularity cutoffs or seeding lines. */
+export function combineCoincidentCharges(charges: readonly Charge[]): readonly Charge[] {
+  // Sampling and RK4 usually receive distinct sources; keep that path allocation-free.
+  const needsCombining = charges.some(
+    (charge, index) =>
+      charge.q === 0 ||
+      charges.some((other, otherIndex) => otherIndex < index && other.x === charge.x && other.y === charge.y),
+  );
+  if (!needsCombining) {
+    return charges;
+  }
+  const combined: Charge[] = [];
+  for (const charge of charges) {
+    const existing = combined.find((other) => other.x === charge.x && other.y === charge.y);
+    if (existing) {
+      existing.q += charge.q;
+    } else {
+      combined.push({ ...charge });
+    }
+  }
+  return combined.filter((charge) => charge.q !== 0);
+}
+
 export function electricField(charges: readonly Charge[], p: Point): Point {
+  return electricFieldFromCharges(combineCoincidentCharges(charges), p);
+}
+
+function electricFieldFromCharges(charges: readonly Charge[], p: Point): Point {
   let x = 0;
   let y = 0;
   for (const charge of charges) {
@@ -27,6 +54,10 @@ export function electricField(charges: readonly Charge[], p: Point): Point {
 }
 
 export function electricPotential(charges: readonly Charge[], p: Point): number {
+  return electricPotentialFromCharges(combineCoincidentCharges(charges), p);
+}
+
+function electricPotentialFromCharges(charges: readonly Charge[], p: Point): number {
   let potential = 0;
   for (const charge of charges) {
     const distance = Math.hypot(p.x - charge.x, p.y - charge.y);
@@ -39,7 +70,7 @@ export function electricPotential(charges: readonly Charge[], p: Point): number 
 }
 
 function direction(charges: readonly Charge[], p: Point): Point | null {
-  const field = electricField(charges, p);
+  const field = electricFieldFromCharges(charges, p);
   const magnitude = Math.hypot(field.x, field.y);
   return Number.isFinite(magnitude) && magnitude > 1e-9 ? { x: field.x / magnitude, y: field.y / magnitude } : null;
 }
@@ -101,7 +132,7 @@ function traceOneWay(charges: readonly Charge[], seed: Point, bounds: FieldBound
     if (closest <= CHARGE_RADIUS * 0.95) {
       break;
     }
-    const field = electricField(charges, current);
+    const field = electricFieldFromCharges(charges, current);
     const magnitude = Math.hypot(field.x, field.y);
     if (!(Number.isFinite(magnitude) && magnitude > 1e-9)) {
       break;
@@ -140,6 +171,10 @@ function traceOneWay(charges: readonly Charge[], seed: Point, bounds: FieldBound
 
 /** Ordered in the direction of E, including the seed. */
 export function traceFieldLine(charges: readonly Charge[], seed: Point, bounds: FieldBounds): Point[] {
+  return traceFieldLineFromCharges(combineCoincidentCharges(charges), seed, bounds);
+}
+
+function traceFieldLineFromCharges(charges: readonly Charge[], seed: Point, bounds: FieldBounds): Point[] {
   if (charges.length === 0 || !direction(charges, seed)) {
     return [];
   }
@@ -167,7 +202,7 @@ function incomingLines(
     for (let i = 0; i < lineCount; i++) {
       const angle = (2 * Math.PI * (i + pass / 4)) / lineCount;
       const seed = { x: sink.x + 0.18 * Math.cos(angle), y: sink.y + 0.18 * Math.sin(angle) };
-      const line = traceFieldLine(charges, seed, bounds);
+      const line = traceFieldLineFromCharges(charges, seed, bounds);
       const first = line[0];
       if (line.length > 1 && first && !charges.some((source) => source.q > 0 && nearCharge(first, source))) {
         candidates.push({ angle, line });
@@ -186,8 +221,63 @@ function incomingLines(
   return selected;
 }
 
+/** Trace symmetric, charge-connected curves around the null of an equal like-charge pair. */
+function symmetricPairFieldLines(charges: readonly Charge[], bounds: FieldBounds, count: number): Point[][] | null {
+  const a = charges[0];
+  const b = charges[1];
+  if (charges.length !== 2 || !a || !b || a.q !== b.q) {
+    return null;
+  }
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const separation = Math.hypot(dx, dy);
+  const offset = 4 * FIELD_NULL_STOP_SCALE;
+  if (separation <= 2 * (CHARGE_RADIUS + offset)) {
+    return null;
+  }
+  const midpoint = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  if (midpoint.x < bounds.minX || midpoint.x > bounds.maxX || midpoint.y < bounds.minY || midpoint.y > bounds.maxY) {
+    return null;
+  }
+  const lines: Point[][] = [];
+  const lineCount = Math.round(count * Math.abs(a.q));
+  for (const charge of [a, b]) {
+    const orientation = charge === a ? 1 : -1;
+    const inward = { x: (orientation * dx) / separation, y: (orientation * dy) / separation };
+    for (let i = 0; i < lineCount; i++) {
+      const angle = (2 * Math.PI * (i + 0.5)) / lineCount;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      let seed = {
+        x: charge.x + 0.18 * (inward.x * cos - inward.y * sin),
+        y: charge.y + 0.18 * (inward.y * cos + inward.x * sin),
+      };
+      if (i === 0 || i === lineCount - 1) {
+        // Move the two innermost seeds close to the null, on this charge's side.
+        // Bidirectional tracing connects each to the charge and the board edge.
+        // The finite offset avoids the undefined direction at the exact zero.
+        const side = i === 0 ? 1 : -1;
+        seed = {
+          x: midpoint.x - offset * inward.x - side * offset * inward.y,
+          y: midpoint.y - offset * inward.y + side * offset * inward.x,
+        };
+      }
+      const line = traceFieldLineFromCharges(charges, seed, bounds);
+      if (line.length > 1) {
+        lines.push(line);
+      }
+    }
+  }
+  return lines;
+}
+
 /** Seed around sources and fill each sink's remaining lines from the board edge. */
-export function automaticFieldLines(charges: readonly Charge[], bounds: FieldBounds, count = 12): Point[][] {
+export function automaticFieldLines(sourceCharges: readonly Charge[], bounds: FieldBounds, count = 12): Point[][] {
+  const charges = combineCoincidentCharges(sourceCharges);
+  const symmetricLines = symmetricPairFieldLines(charges, bounds, count);
+  if (symmetricLines) {
+    return symmetricLines;
+  }
   const lines: Point[][] = [];
   const sinks = charges.filter((charge) => charge.q < 0);
   const arrivals = sinks.map(() => 0);
@@ -200,7 +290,7 @@ export function automaticFieldLines(charges: readonly Charge[], bounds: FieldBou
         x: sourceCharge.x + 0.18 * Math.cos(angle),
         y: sourceCharge.y + 0.18 * Math.sin(angle),
       };
-      const line = traceFieldLine(charges, seed, bounds);
+      const line = traceFieldLineFromCharges(charges, seed, bounds);
       const last = line.at(-1);
       if (line.length > 1 && last) {
         lines.push(line);
@@ -231,9 +321,9 @@ function equipotentialDirection(charges: readonly Charge[], p: Point): Point | n
 
 /** Pulls a point back onto V = target along the field, cancelling integration drift. */
 function projectOntoPotential(charges: readonly Charge[], p: Point, target: number): Point {
-  const field = electricField(charges, p);
+  const field = electricFieldFromCharges(charges, p);
   const magnitude2 = field.x * field.x + field.y * field.y;
-  const potential = electricPotential(charges, p);
+  const potential = electricPotentialFromCharges(charges, p);
   if (!(Number.isFinite(magnitude2) && Number.isFinite(potential)) || magnitude2 < 1e-12) {
     return p;
   }
@@ -302,8 +392,9 @@ function traceEquipotentialOneWay(
  * Traces the equipotential through the seed. Closed curves return to the seed; open curves
  * are traced in both directions until they leave the bounds.
  */
-export function traceEquipotential(charges: readonly Charge[], seed: Point, bounds: FieldBounds): Point[] {
-  const target = electricPotential(charges, seed);
+export function traceEquipotential(sourceCharges: readonly Charge[], seed: Point, bounds: FieldBounds): Point[] {
+  const charges = combineCoincidentCharges(sourceCharges);
+  const target = electricPotentialFromCharges(charges, seed);
   if (charges.length === 0 || !Number.isFinite(target) || !direction(charges, seed)) {
     return [];
   }

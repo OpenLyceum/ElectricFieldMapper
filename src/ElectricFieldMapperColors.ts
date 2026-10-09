@@ -89,6 +89,31 @@ const ElectricFieldMapperColors = {
     default: "#8598ad",
     projector: "#617083",
   }),
+  /** One-metre scale arrow drawn on the grid while Values is on. */
+  gridScaleArrowFillColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "gridScaleArrowFill", {
+    default: "#ffffff",
+    projector: "rgb(255,153,0)",
+  }),
+  gridScaleArrowStrokeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "gridScaleArrowStroke", {
+    default: "#ffffff",
+    projector: "rgb(255,0,0)",
+  }),
+  gridScaleTextColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "gridScaleText", {
+    default: "#ffffff",
+    projector: "#000000",
+  }),
+  measuringTapeTextColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "measuringTapeText", {
+    default: "#ffffff",
+    projector: "#000000",
+  }),
+  measuringTapeReadoutBackgroundColorProperty: new ProfileColorProperty(
+    ElectricFieldMapperNamespace,
+    "measuringTapeReadoutBackground",
+    {
+      default: "rgba(0,0,0,0.65)",
+      projector: "rgba(255,255,255,0.85)",
+    },
+  ),
   // ── Charges (shaded spheres, as in PhET's Charges and Fields) ────────────────
   positiveChargeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "positiveCharge", {
     default: "rgb(245,60,44)",

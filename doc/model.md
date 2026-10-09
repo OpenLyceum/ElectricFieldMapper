@@ -13,9 +13,13 @@ V(r) = Σ k qᵢ / |r − rᵢ|
 
 Here `k = 8.9875517923` after converting charges from nC, so E is in V/m and V is in volts. Inside a radius of 0.15 m around a charge, the ideal point-charge field is singular; the model returns an undefined field and infinite potential. Sensors show a dash and the voltmeter shows ±∞ there.
 
+Charges at exactly the same position are combined into a net charge for all field and potential calculations. Equal positive and negative charges cancel completely, including inside their overlapping disks, so they produce no field arrows, field lines, or voltage-map colour. The charges remain separately draggable; moving one away restores their fields. Unequal overlapping charges behave as their net charge.
+
 Field lines are integral curves of the **unit field direction**, not trajectories of moving test charges. Their geometry follows E while their spacing is an illustrative choice. The tracer integrates in both directions with fourth-order Runge–Kutta steps. A step is reduced when the direction turns sharply or a charge is near, and grows gently on straighter segments. Tracing ends at the board boundary, a charge disk, a zero or undefined field, or the 900-step limit per direction. Lines are ordered in the direction of E, and arrows use that order.
 
 Automatic lines use twelve seeds per nanocoulomb of positive charge (twenty in dense mode). Each negative charge gets the same number of arriving lines per nanocoulomb: lines already traced from positive charges count toward this total, and the remaining lines are traced backward from the negative charge to the board edge. This shows the lines entering a dipole's negative charge from outside the board without drawing a second copy of the source-to-sink lines. These counts illustrate charge magnitude; drawn line density is not a quantitative flux measurement. User placed seeds add extra lines; clearing them leaves automatic lines intact.
+
+For two equal like charges, the field vanishes at their midpoint. An exactly axial user-drawn line stops just short of this null; its steps shrink with the local field variation scale so it cannot overshoot or oscillate across it. Automatic drawing uses reflection-symmetric angular seeds and places the two innermost seeds per charge slightly off the axis near the midpoint. Bidirectional RK4 tracing connects each curve to its charge and to the board edge, approaching the midpoint before bending outward on either side. No separate lines are seeded on the perpendicular bisector. For negative charges the arrows reverse. This construction follows the pair when it is moved or rotated and preserves the number of lines attached to each charge.
 
 ## Electric potential tools
 

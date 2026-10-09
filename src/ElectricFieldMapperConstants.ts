@@ -24,6 +24,23 @@ import ElectricFieldMapperNamespace from "./ElectricFieldMapperNamespace.js";
 /** Margin between the screen edge and edge-anchored controls (e.g. Reset All). */
 export const SCREEN_VIEW_MARGIN = 20;
 
+/**
+ * Scenery-phet's InfoButton is large beside Reset All. Draw it at half of that size.
+ */
+export const INFO_BUTTON_SCALE = 0.5;
+
+/**
+ * Pointer-area dilation for the information button, in its local pixels.
+ * At {@link INFO_BUTTON_SCALE} this keeps about the same on-screen slop as InfoButton's default of 10.
+ */
+export const INFO_BUTTON_POINTER_AREA_DILATION = 20;
+
+/** Gap between the information button and Reset All (screen pixels). */
+export const INFO_RESET_BUTTON_SPACING = 12;
+
+/** Line-wrap width of the field-lines information dialog (screen pixels). */
+export const INFO_DIALOG_LINE_WRAP = 440;
+
 /** Corner radius shared by control panels and dialogs. */
 export const PANEL_CORNER_RADIUS = 6;
 
@@ -52,6 +69,10 @@ export const GRID_MINOR_LINES_PER_MAJOR = 5;
 
 ElectricFieldMapperNamespace.register("ElectricFieldMapperConstants", {
   SCREEN_VIEW_MARGIN,
+  INFO_BUTTON_SCALE,
+  INFO_BUTTON_POINTER_AREA_DILATION,
+  INFO_RESET_BUTTON_SPACING,
+  INFO_DIALOG_LINE_WRAP,
   PANEL_CORNER_RADIUS,
   CHARGE_TOOLBOX_WIDTH,
   CHARGE_TOOLBOX_HEIGHT,

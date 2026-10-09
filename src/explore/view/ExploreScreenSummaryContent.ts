@@ -11,12 +11,14 @@ export class ExploreScreenSummaryContent extends ScreenSummaryContent {
         model.changeCountProperty,
         model.sensors.lengthProperty,
         model.voltmeterActiveProperty,
+        model.measuringTapeActiveProperty,
         model.showVoltageProperty,
         model.showValuesProperty,
       ],
       () =>
         `${model.charges.length} charges. ${model.sensors.length} electric field sensors. ` +
         `Voltmeter ${model.voltmeterActiveProperty.value ? "on the board" : "in the toolbox"}. ` +
+        `Measuring tape ${model.measuringTapeActiveProperty.value ? "on the board" : "in the toolbox"}. ` +
         `Voltage map ${model.showVoltageProperty.value ? "shown" : "hidden"}. ` +
         `Numeric values ${model.showValuesProperty.value ? "shown" : "hidden"}. ` +
         `${model.seedPoints.length} drawn field lines. ${model.equipotentialSeeds.length} equipotential lines.`,
