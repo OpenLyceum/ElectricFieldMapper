@@ -4,15 +4,22 @@ This is a single-screen SceneryStack simulation. Follow the shared guidance in `
 
 ## Architecture
 
-- `src/explore/model/FieldPhysics.ts` has pure Coulomb field and potential calculations plus a bidirectional adaptive RK4 field-line tracer. Charges are in nC and coordinates in metres; `K_NC` converts to V/m and V.
-- `src/explore/model/ExploreModel.ts` owns charge instances, display toggles, drawn line seeds, and probe position. `changeCountProperty` invalidates the canvas on charge edits.
-- `src/explore/view/FieldCanvasNode.ts` paints the grid, automatic and drawn field lines, and sampled vector arrows. Field arrows point in the actual E direction; opacity and length are compressed logarithmically for display.
-- `src/explore/view/ChargeNode.ts` gives charges pointer and keyboard dragging. `ExploreScreenView.ts` lays out the board, probe, controls, and reset.
+- `src/explore/model/FieldPhysics.ts` has pure Coulomb field and potential calculations plus a bidirectional adaptive RK4 field-line tracer and an RK4 equipotential tracer with a Newton projection back onto the target potential. Charges are in nC and coordinates in metres; `K_NC` converts to V/m and V.
+- `src/explore/model/ExploreModel.ts` owns charge instances, electric field sensors, display toggles (including the voltage map), drawn line seeds, the voltmeter (active flag and position), and equipotential seeds. `changeCountProperty` invalidates the canvas on charge edits.
+- `src/explore/model/ChargePresets.ts` defines named charge arrangements. Selecting one clears drawn field and equipotential lines; manual charge edits select Custom. `GRID_SPACING_M` controls both grid drawing and charge snapping.
+- `src/explore/view/FieldCanvasNode.ts` paints the red/blue voltage map (`potentialColor.ts`, saturating at `POTENTIAL_SATURATION`), labelled equipotentials, the grid, automatic and drawn field lines, and sampled vector arrows. Field arrows point in the actual E direction; opacity and length are compressed logarithmically for display.
+- `src/common/ChargeRepresentationNode.ts` draws the shaded charge spheres. `src/explore/view/ChargeNode.ts` gives charges pointer and keyboard dragging. `ElectricFieldSensorNode.ts` and `VoltmeterNode.ts` are the Charges-and-Fields-style measuring tools. `ExploreScreenView.ts` lays out the board, charge/sensor box, tools box, controls, and reset.
 - `src/i18n/strings_*.json` holds English, Spanish, and French strings. All interactive controls must retain accessible names.
 
 ## Physics notes
 
-The ideal point-charge field is singular at a charge. `CHARGE_RADIUS` masks that disk in sampling and stops integration before singularities. Field-line density is illustrative, not a quantitative flux measurement. The field probe reports the unsaturated physical field and potential outside charge disks.
+The ideal point-charge field is singular at a charge. `CHARGE_RADIUS` masks that disk in sampling and stops integration before singularities. Field-line density is illustrative, not a quantitative flux measurement. Field sensors and the voltmeter report the unsaturated physical field and potential outside charge disks.
+
+## Interaction quirks
+
+- Do not change PDOM content (e.g. `accessibleParagraph`) of a focused node on every position change: it rebuilds the element and interrupts keyboard drags. Sensors and the voltmeter announce readings with `addAccessibleObjectResponse` on release instead.
+- The voltmeter's focusable drag handle and its buttons are siblings, so keys on a focused button never start a drag. The drag listener uses `targetNode` set to the translated outer node.
+- Keyboard drags are bounded to the board (`KEYBOARD_DRAG_BOUNDS_PROPERTY`); pointer drags may leave it to reach a toolbox and are clamped on release.
 
 ## Local reference material
 

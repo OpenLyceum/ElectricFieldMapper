@@ -34,6 +34,7 @@ export class ChargeNode extends Node {
     this.dragListener = new RichDragListener({
       positionProperty: charge.positionProperty,
       transform: mvt,
+      mapPosition: (position) => (model.snapToGridProperty.value ? model.snapPosition(position) : position),
       dragListenerOptions: { applyOffset: false },
       keyboardDragListenerOptions: {
         dragSpeed: 90,

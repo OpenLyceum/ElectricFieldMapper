@@ -25,6 +25,7 @@
         "takeVoltmeter": "Arrastra al tablero o pulsa Intro o Espacio para usar el voltímetro.",
         "plotEquipotential": "Trazar la equipotencial que pasa por la mira",
         "clearEquipotentials": "Borrar las equipotenciales",
+        "chargePresets": "Configuraciones de cargas",
         "reset": "Restablecer todo"
       }
     }
@@ -41,6 +42,18 @@
     "negativeOneNc": "−1 nC",
     "removeLast": "Quitar última",
     "clearCharges": "Borrar todas",
+    "chargePresets": "Configuraciones",
+    "snapToGrid": "Ajustar cargas a la cuadrícula",
+    "presets": {
+      "custom": "Personalizada",
+      "dipole": "Dipolo",
+      "likePair": "Dos cargas positivas",
+      "line": "Línea de cargas positivas",
+      "alternatingLine": "Línea de cargas alternas",
+      "square": "Cuadrado de cargas positivas",
+      "quadrupole": "Cuadrupolo",
+      "parallelPlates": "Placas paralelas"
+    },
     "display": "Mostrar",
     "showVectors": "Vectores de campo",
     "showLines": "Líneas de campo",

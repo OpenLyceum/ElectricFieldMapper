@@ -25,6 +25,7 @@
         "takeVoltmeter": "Glissez vers la zone ou appuyez sur Entrée ou Espace pour utiliser le voltmètre.",
         "plotEquipotential": "Tracer l’équipotentielle passant par le réticule",
         "clearEquipotentials": "Effacer les équipotentielles",
+        "chargePresets": "Configurations de charges",
         "reset": "Tout réinitialiser"
       }
     }
@@ -41,6 +42,18 @@
     "negativeOneNc": "−1 nC",
     "removeLast": "Retirer dernière",
     "clearCharges": "Tout effacer",
+    "chargePresets": "Configurations",
+    "snapToGrid": "Aligner les charges sur la grille",
+    "presets": {
+      "custom": "Personnalisée",
+      "dipole": "Dipôle",
+      "likePair": "Deux charges positives",
+      "line": "Ligne de charges positives",
+      "alternatingLine": "Ligne de charges alternées",
+      "square": "Carré de charges positives",
+      "quadrupole": "Quadrupôle",
+      "parallelPlates": "Plaques parallèles"
+    },
     "display": "Affichage",
     "showVectors": "Vecteurs du champ",
     "showLines": "Lignes de champ",

@@ -15,7 +15,7 @@ import {
 } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { Checkbox, RectangularPushButton } from "scenerystack/sun";
+import { Checkbox, ComboBox, RectangularPushButton } from "scenerystack/sun";
 import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
 import {
   FLAT_PANEL_PUSH_BUTTON_OPTIONS,
@@ -28,6 +28,7 @@ import {
   CHARGE_TOOLBOX_ICON_INSET,
   CHARGE_TOOLBOX_ICON_Y,
   CHARGE_TOOLBOX_WIDTH,
+  GRID_SPACING_M,
   SCREEN_VIEW_MARGIN,
 } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -118,7 +119,14 @@ export class ExploreScreenView extends ScreenView {
         return;
       }
       // Charges follow the pointer into the toolbox, but settle inside the field when released elsewhere.
-      clampToBoard(charge.positionProperty, 0.18);
+      const margin = model.snapToGridProperty.value ? GRID_SPACING_M : 0.18;
+      clampToBoard(charge.positionProperty, margin);
+      if (model.snapToGridProperty.value) {
+        const snapped = model.snapPosition(charge.positionProperty.value);
+        if (!snapped.equals(charge.positionProperty.value)) {
+          charge.positionProperty.value = snapped;
+        }
+      }
     };
     const addChargeNode = (charge: PointCharge): void => {
       const node = new ChargeNode(charge, model, mvt, finishChargeDrag);
@@ -351,6 +359,32 @@ export class ExploreScreenView extends ScreenView {
         model.removeCharge(charge);
       }
     });
+    const comboListParent = new Node();
+    const presetLabels = ui.presets;
+    const presetItems = (
+      [
+        ["custom", presetLabels.customStringProperty],
+        ["dipole", presetLabels.dipoleStringProperty],
+        ["likePair", presetLabels.likePairStringProperty],
+        ["line", presetLabels.lineStringProperty],
+        ["alternatingLine", presetLabels.alternatingLineStringProperty],
+        ["square", presetLabels.squareStringProperty],
+        ["quadrupole", presetLabels.quadrupoleStringProperty],
+        ["parallelPlates", presetLabels.parallelPlatesStringProperty],
+      ] as const
+    ).map(([value, label]) => ({
+      value,
+      createNode: () => new Text(label, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty }),
+      accessibleName: label,
+    }));
+    const chargePresets = new ComboBox(model.presetProperty, presetItems, comboListParent, {
+      accessibleName: a11y.controls.chargePresetsStringProperty,
+      buttonFill: ElectricFieldMapperColors.playAreaColorProperty,
+      buttonStroke: ElectricFieldMapperColors.panelBorderColorProperty,
+      listFill: ElectricFieldMapperColors.playAreaColorProperty,
+      listStroke: ElectricFieldMapperColors.panelBorderColorProperty,
+    });
+    const snapToGrid = check(model.snapToGridProperty, ui.snapToGridStringProperty);
     const seedAtVoltmeter = button(ui.seedAtProbeStringProperty, () => {
       const p = model.voltmeterPositionProperty.value;
       if (!model.isNearCharge(p)) {
@@ -364,11 +398,17 @@ export class ExploreScreenView extends ScreenView {
     const panel = new ElectricFieldMapperPanel(
       new VBox({
         align: "left",
-        spacing: 7,
+        spacing: 5,
         children: [
           heading(ui.chargesStringProperty),
           chargeBox,
           new HBox({ spacing: 6, children: [removeLast, clearCharges] }),
+          new Text(ui.chargePresetsStringProperty, {
+            font: "bold 14px sans-serif",
+            fill: ElectricFieldMapperColors.textColorProperty,
+          }),
+          chargePresets,
+          snapToGrid,
           heading(ui.displayStringProperty),
           check(model.showVectorsProperty, ui.showVectorsStringProperty),
           check(model.showLinesProperty, ui.showLinesStringProperty),
@@ -387,6 +427,7 @@ export class ExploreScreenView extends ScreenView {
     panel.right = bounds.maxX - SCREEN_VIEW_MARGIN;
     panel.top = SCREEN_VIEW_MARGIN - 6;
     this.addChild(panel);
+    this.addChild(comboListParent);
     // Items dragged out of the boxes must draw above the panel; the voltmeter is the largest, so it goes under sensors.
     voltmeter.moveToFront();
     chargeLayer.moveToFront();

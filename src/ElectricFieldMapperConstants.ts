@@ -44,7 +44,8 @@ export const VOLTMETER_CROSSHAIR_RADIUS = 18;
 
 // ── Physics / model defaults (SI units) ───────────────────────────────────────
 
-// Example: export const GRAVITY_MPS2 = 9.81; // m/s²
+/** Distance between adjacent grid lines and charge snap points (metres). */
+export const GRID_SPACING_M = 0.5;
 
 ElectricFieldMapperNamespace.register("ElectricFieldMapperConstants", {
   SCREEN_VIEW_MARGIN,
@@ -56,4 +57,5 @@ ElectricFieldMapperNamespace.register("ElectricFieldMapperConstants", {
   CHARGE_VIEW_RADIUS,
   FIELD_SENSOR_VIEW_RADIUS,
   VOLTMETER_CROSSHAIR_RADIUS,
+  GRID_SPACING_M,
 });
