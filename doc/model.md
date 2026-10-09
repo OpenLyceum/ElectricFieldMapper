@@ -2,7 +2,7 @@
 
 The Explore screen represents each point charge with a sign (`+1` or `−1` nanocoulomb) and a position in metres. The board covers x = −4 to 4 m and y = −3 to 3 m. New charges can be added without changing the existing charges.
 
-The configuration selector replaces the charge arrangement with a dipole, like pair, line, alternating line, square, quadrupole, or parallel plates. Moving, adding, or removing a charge switches the selector to Custom. Selecting a configuration clears drawn field and equipotential lines because their seeds depend on the previous arrangement. When snapping is enabled, charges align to the 0.5 m grid and stay at least one grid step inside the board edge.
+The configuration selector replaces the charge arrangement with a dipole, like pair, line, alternating line, square, quadrupole, or parallel plates. The `preset` query parameter selects the same list (or `custom`, which starts empty) when the page opens. Moving, adding, or removing a charge switches the selector to Custom. Selecting a configuration clears drawn field and equipotential lines because their seeds depend on the previous arrangement. When snapping is enabled, charges align to the 0.5 m grid and stay at least one grid step inside the board edge.
 
 At any position outside a charge disk, the field is the superposition
 

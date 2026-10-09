@@ -10,8 +10,38 @@ import {
 import { Bounds2, Vector2, Vector2Property } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
 import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
-import { CHARGE_PRESETS, type ChargePreset } from "./ChargePresets.js";
+import electricFieldMapperQueryParameters from "../../preferences/electricFieldMapperQueryParameters.js";
+import { CHARGE_PRESETS, type ChargePreset, isChargePreset } from "./ChargePresets.js";
 import { CHARGE_RADIUS, combineCoincidentCharges, type FieldBounds, type Point } from "./FieldPhysics.js";
+
+/** Opening checkbox and configuration state. Omitted fields use the page query parameters. */
+export type ExploreLaunchOptions = {
+  showVectors: boolean;
+  showLines: boolean;
+  automaticLines: boolean;
+  showVoltage: boolean;
+  showValues: boolean;
+  showGrid: boolean;
+  snapToGrid: boolean;
+  drawMode: boolean;
+  preset: ChargePreset;
+};
+
+function launchFromQuery(): ExploreLaunchOptions {
+  const parameters = electricFieldMapperQueryParameters;
+  const preset = parameters.preset;
+  return {
+    showVectors: parameters.showVectors,
+    showLines: parameters.showLines,
+    automaticLines: parameters.automaticLines,
+    showVoltage: parameters.showVoltage,
+    showValues: parameters.showValues,
+    showGrid: parameters.showGrid,
+    snapToGrid: parameters.snapToGrid,
+    drawMode: parameters.drawMode,
+    preset: isChargePreset(preset) ? preset : "dipole",
+  };
+}
 
 /** Initial field area, before the view reports how much of the model the browser window shows. */
 export const FIELD_BOUNDS: FieldBounds = { minX: -4, maxX: 4, minY: -3, maxY: 3 };
@@ -56,21 +86,21 @@ export class ExploreModel implements TModel {
   public readonly charges: ObservableArray<PointCharge> = createObservableArray<PointCharge>();
   public readonly sensors: ObservableArray<ElectricFieldSensor> = createObservableArray<ElectricFieldSensor>();
   public readonly changeCountProperty = new NumberProperty(0);
-  public readonly showVectorsProperty = new BooleanProperty(true);
-  public readonly showLinesProperty = new BooleanProperty(true);
-  public readonly showVoltageProperty = new BooleanProperty(false);
+  public readonly showVectorsProperty: BooleanProperty;
+  public readonly showLinesProperty: BooleanProperty;
+  public readonly showVoltageProperty: BooleanProperty;
   /**
    * Numeric labels on field sensors (strength and angle) and on equipotential curves,
    * and the one-metre scale arrow on the grid. Off by default, as in Charges and Fields.
    * The voltmeter and measuring-tape readouts stay visible either way.
    */
-  public readonly showValuesProperty = new BooleanProperty(false);
-  public readonly showGridProperty = new BooleanProperty(true);
-  public readonly snapToGridProperty = new BooleanProperty(false);
-  public readonly presetProperty = new Property<ChargePreset>("dipole");
-  public readonly drawModeProperty = new BooleanProperty(false);
+  public readonly showValuesProperty: BooleanProperty;
+  public readonly showGridProperty: BooleanProperty;
+  public readonly snapToGridProperty: BooleanProperty;
+  public readonly presetProperty: Property<ChargePreset>;
+  public readonly drawModeProperty: BooleanProperty;
   public readonly denseFieldLinesProperty: BooleanProperty;
-  public readonly automaticLinesProperty = new BooleanProperty(true);
+  public readonly automaticLinesProperty: BooleanProperty;
   /** True while the voltmeter is out of its toolbox and on the board. */
   public readonly voltmeterActiveProperty = new BooleanProperty(false);
   public readonly voltmeterPositionProperty = new Vector2Property(VOLTMETER_DEFAULT_POSITION);
@@ -95,9 +125,22 @@ export class ExploreModel implements TModel {
   private readonly chargePositionListeners = new Map<PointCharge, () => void>();
   /** True while charges move for a reason other than the user editing them, so the preset is kept. */
   private movingProgrammatically = false;
+  /** Configuration restored by Reset All. Matches the query parameter when the page was opened. */
+  private readonly initialPreset: ChargePreset;
 
-  public constructor(denseFieldLinesProperty = new BooleanProperty(false)) {
+  public constructor(denseFieldLinesProperty = new BooleanProperty(false), launch: Partial<ExploreLaunchOptions> = {}) {
+    const initial = { ...launchFromQuery(), ...launch };
     this.denseFieldLinesProperty = denseFieldLinesProperty;
+    this.showVectorsProperty = new BooleanProperty(initial.showVectors);
+    this.showLinesProperty = new BooleanProperty(initial.showLines);
+    this.showVoltageProperty = new BooleanProperty(initial.showVoltage);
+    this.showValuesProperty = new BooleanProperty(initial.showValues);
+    this.showGridProperty = new BooleanProperty(initial.showGrid);
+    this.snapToGridProperty = new BooleanProperty(initial.snapToGrid);
+    this.drawModeProperty = new BooleanProperty(initial.drawMode);
+    this.automaticLinesProperty = new BooleanProperty(initial.automaticLines);
+    this.presetProperty = new Property<ChargePreset>(initial.preset);
+    this.initialPreset = initial.preset;
     this.presetProperty.link((preset) => {
       if (preset !== "custom" && !this.movingProgrammatically) {
         this.applyPreset(preset);
@@ -223,6 +266,10 @@ export class ExploreModel implements TModel {
 
   /** Replace charges with a named example. Drawn lines are cleared because their seeds refer to the old arrangement. */
   public applyPreset(preset: Exclude<ChargePreset, "custom">): void {
+    this.replaceCharges(preset);
+  }
+
+  private replaceCharges(preset: ChargePreset): void {
     this.movingProgrammatically = true;
     try {
       for (const charge of [...this.charges]) {
@@ -230,8 +277,10 @@ export class ExploreModel implements TModel {
       }
       this.seedPoints.length = 0;
       this.equipotentialSeeds.length = 0;
-      for (const charge of CHARGE_PRESETS[preset]) {
-        this.addCharge(charge.q, charge);
+      if (preset !== "custom") {
+        for (const charge of CHARGE_PRESETS[preset]) {
+          this.addCharge(charge.q, charge);
+        }
       }
       this.presetProperty.value = preset;
     } finally {
@@ -280,7 +329,7 @@ export class ExploreModel implements TModel {
   }
 
   public reset(): void {
-    this.applyPreset("dipole");
+    this.replaceCharges(this.initialPreset);
     for (const sensor of [...this.sensors]) {
       this.removeSensor(sensor);
     }

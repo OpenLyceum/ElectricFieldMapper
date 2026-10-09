@@ -17,6 +17,25 @@ The board fits the SceneryStack 1024 × 618 design space with a panel on the rig
 - The preference property is shared with the Explore model and directly invalidates the canvas.
 - User placed line seeds are unaffected by the preference.
 
+## Launch query parameters
+
+Checkboxes and the configuration combo box take their opening state from the page URL. Each boolean is `true` or `false`. An unrecognized value is ignored and the control keeps its default. Reset All returns to this opening state.
+
+| Parameter | Control | Default |
+|---|---|---|
+| `showVectors` | Field vectors | `true` |
+| `showLines` | Field lines | `true` |
+| `automaticLines` | Automatic lines | `true` |
+| `showVoltage` | Voltage | `false` |
+| `showValues` | Values | `false` |
+| `showGrid` | Grid | `true` |
+| `snapToGrid` | Snap charges to grid | `false` |
+| `drawMode` | Tap to draw | `false` |
+| `denseFieldLines` | More automatic field lines (Preferences) | `false` |
+| `preset` | Configurations combo box | `dipole` |
+
+`preset` is one of `custom`, `dipole`, `likePair`, `line`, `alternatingLine`, `square`, `quadrupole`, or `parallelPlates`. `custom` starts with an empty board. Example: `?preset=quadrupole&showVoltage=true&showVectors=false`.
+
 ## Rendering and input boundaries
 
 - The canvas clips all vector and line drawings to the board.

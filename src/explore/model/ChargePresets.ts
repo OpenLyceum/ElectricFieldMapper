@@ -1,14 +1,22 @@
 import type { Point } from "./FieldPhysics.js";
 
-export type ChargePreset =
-  | "custom"
-  | "dipole"
-  | "likePair"
-  | "line"
-  | "alternatingLine"
-  | "square"
-  | "quadrupole"
-  | "parallelPlates";
+/** Values accepted by the configuration combo box and the `preset` query parameter. */
+export const CHARGE_PRESET_VALUES = [
+  "custom",
+  "dipole",
+  "likePair",
+  "line",
+  "alternatingLine",
+  "square",
+  "quadrupole",
+  "parallelPlates",
+] as const;
+
+export type ChargePreset = (typeof CHARGE_PRESET_VALUES)[number];
+
+export function isChargePreset(value: string | null): value is ChargePreset {
+  return value !== null && (CHARGE_PRESET_VALUES as readonly string[]).includes(value);
+}
 
 export type PresetCharge = Point & { q: 1 | -1 };
 

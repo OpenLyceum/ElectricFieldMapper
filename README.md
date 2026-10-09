@@ -12,6 +12,7 @@ A SceneryStack simulation for exploring electric fields created by point charges
 - Turn on **Voltage** to colour the board by electric potential: red for positive, blue for negative.
 - Drag the voltmeter out of the toolbox to read potential in V at its crosshair, and plot or erase equipotential lines. **Values** also labels those lines with their voltage.
 - Toggle the grid and use projector mode, French, or Spanish from Preferences.
+- Set the opening checkboxes and charge configuration from the URL, for example `?preset=quadrupole&showVoltage=true&showVectors=false`.
 - Keyboard support for dragging charges, sensors, and the voltmeter, named controls, and a live screen summary.
 
 ## Quick Start
@@ -24,6 +25,8 @@ npm start
 ```
 
 Open the local URL shown by Vite. The initial dipole has one positive and one negative charge. Turn on **Tap to draw** and tap the board to add a line through that point, or choose **Line at voltmeter** for keyboard access.
+
+Checkbox query parameters are `showVectors`, `showLines`, `automaticLines`, `showVoltage`, `showValues`, `showGrid`, `snapToGrid`, `drawMode`, and `denseFieldLines`, each `true` or `false`. The configuration parameter `preset` is `dipole`, `likePair`, `line`, `alternatingLine`, `square`, `quadrupole`, `parallelPlates`, or `custom`.
 
 ## Scripts
 
