@@ -16,7 +16,7 @@ import {
 } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { Checkbox, RectangularPushButton } from "scenerystack/sun";
+import { Checkbox, ComboBox, RectangularPushButton } from "scenerystack/sun";
 import {
   FLAT_PANEL_PUSH_BUTTON_OPTIONS,
   FLAT_RESET_ALL_BUTTON_OPTIONS,
@@ -28,6 +28,7 @@ import {
   CHARGE_TOOLBOX_ICON_X,
   CHARGE_TOOLBOX_ICON_Y,
   CHARGE_TOOLBOX_WIDTH,
+  GRID_SPACING_M,
   SCREEN_VIEW_MARGIN,
 } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -97,11 +98,12 @@ export class ExploreScreenView extends ScreenView {
         return;
       }
       // Charges follow the pointer into the toolbox, but settle inside the field when released elsewhere.
+      const margin = model.snapToGridProperty.value ? GRID_SPACING_M : 0.18;
       const clamped = new Vector2(
-        Math.max(FIELD_BOUNDS.minX + 0.18, Math.min(FIELD_BOUNDS.maxX - 0.18, position.x)),
-        Math.max(FIELD_BOUNDS.minY + 0.18, Math.min(FIELD_BOUNDS.maxY - 0.18, position.y)),
+        Math.max(FIELD_BOUNDS.minX + margin, Math.min(FIELD_BOUNDS.maxX - margin, position.x)),
+        Math.max(FIELD_BOUNDS.minY + margin, Math.min(FIELD_BOUNDS.maxY - margin, position.y)),
       );
-      charge.positionProperty.value = clamped;
+      charge.positionProperty.value = model.snapToGridProperty.value ? model.snapPosition(clamped) : clamped;
     };
     const addChargeNode = (charge: PointCharge): void => {
       const node = new ChargeNode(charge, model, mvt, finishChargeDrag);
@@ -251,6 +253,32 @@ export class ExploreScreenView extends ScreenView {
         model.removeCharge(charge);
       }
     });
+    const comboListParent = new Node();
+    const presetLabels = ui.presets;
+    const presetItems = (
+      [
+        ["custom", presetLabels.customStringProperty],
+        ["dipole", presetLabels.dipoleStringProperty],
+        ["likePair", presetLabels.likePairStringProperty],
+        ["line", presetLabels.lineStringProperty],
+        ["alternatingLine", presetLabels.alternatingLineStringProperty],
+        ["square", presetLabels.squareStringProperty],
+        ["quadrupole", presetLabels.quadrupoleStringProperty],
+        ["parallelPlates", presetLabels.parallelPlatesStringProperty],
+      ] as const
+    ).map(([value, label]) => ({
+      value,
+      createNode: () => new Text(label, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty }),
+      accessibleName: label,
+    }));
+    const chargePresets = new ComboBox(model.presetProperty, presetItems, comboListParent, {
+      accessibleName: a11y.controls.chargePresetsStringProperty,
+      buttonFill: ElectricFieldMapperColors.playAreaColorProperty,
+      buttonStroke: ElectricFieldMapperColors.panelBorderColorProperty,
+      listFill: ElectricFieldMapperColors.playAreaColorProperty,
+      listStroke: ElectricFieldMapperColors.panelBorderColorProperty,
+    });
+    const snapToGrid = check(model.snapToGridProperty, ui.snapToGridStringProperty);
     const showVectors = check(model.showVectorsProperty, ui.showVectorsStringProperty);
     const showLines = check(model.showLinesProperty, ui.showLinesStringProperty);
     const automaticLines = check(model.automaticLinesProperty, ui.automaticLinesStringProperty);
@@ -282,7 +310,7 @@ export class ExploreScreenView extends ScreenView {
     const panel = new ElectricFieldMapperPanel(
       new VBox({
         align: "left",
-        spacing: 10,
+        spacing: 5,
         children: [
           new Text(ui.chargesStringProperty, {
             font: "bold 18px sans-serif",
@@ -290,6 +318,12 @@ export class ExploreScreenView extends ScreenView {
           }),
           chargeBox,
           new HBox({ spacing: 6, children: [removeLast, clearCharges] }),
+          new Text(ui.chargePresetsStringProperty, {
+            font: "bold 14px sans-serif",
+            fill: ElectricFieldMapperColors.textColorProperty,
+          }),
+          chargePresets,
+          snapToGrid,
           new Text(ui.displayStringProperty, {
             font: "bold 18px sans-serif",
             fill: ElectricFieldMapperColors.textColorProperty,
@@ -318,6 +352,7 @@ export class ExploreScreenView extends ScreenView {
     panel.right = bounds.maxX - SCREEN_VIEW_MARGIN;
     panel.top = SCREEN_VIEW_MARGIN;
     this.addChild(panel);
+    this.addChild(comboListParent);
     chargeLayer.moveToFront();
 
     const hint = new Text(ui.hintStringProperty, {

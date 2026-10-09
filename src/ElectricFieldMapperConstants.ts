@@ -35,7 +35,8 @@ export const CHARGE_TOOLBOX_ICON_Y = 29;
 
 // ── Physics / model defaults (SI units) ───────────────────────────────────────
 
-// Example: export const GRAVITY_MPS2 = 9.81; // m/s²
+/** Distance between adjacent grid lines and charge snap points (metres). */
+export const GRID_SPACING_M = 0.5;
 
 ElectricFieldMapperNamespace.register("ElectricFieldMapperConstants", {
   SCREEN_VIEW_MARGIN,
@@ -44,4 +45,5 @@ ElectricFieldMapperNamespace.register("ElectricFieldMapperConstants", {
   CHARGE_TOOLBOX_HEIGHT,
   CHARGE_TOOLBOX_ICON_X,
   CHARGE_TOOLBOX_ICON_Y,
+  GRID_SPACING_M,
 });

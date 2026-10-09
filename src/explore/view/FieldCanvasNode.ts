@@ -2,6 +2,7 @@ import type { Bounds2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode } from "scenerystack/scenery";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
+import { GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
 import { FIELD_BOUNDS } from "../model/ExploreModel.js";
 import { automaticFieldLines, electricField, type Point, traceFieldLine } from "../model/FieldPhysics.js";
@@ -83,14 +84,14 @@ export class FieldCanvasNode extends CanvasNode {
     ctx.strokeStyle = ElectricFieldMapperColors.gridColorProperty.value.toCSS();
     ctx.globalAlpha = 0.22;
     ctx.lineWidth = 1;
-    for (let x = FIELD_BOUNDS.minX; x <= FIELD_BOUNDS.maxX; x += 0.5) {
+    for (let x = FIELD_BOUNDS.minX; x <= FIELD_BOUNDS.maxX; x += GRID_SPACING_M) {
       const px = this.mvt.modelToViewX(x);
       ctx.beginPath();
       ctx.moveTo(px, top);
       ctx.lineTo(px, bottom);
       ctx.stroke();
     }
-    for (let y = FIELD_BOUNDS.minY; y <= FIELD_BOUNDS.maxY; y += 0.5) {
+    for (let y = FIELD_BOUNDS.minY; y <= FIELD_BOUNDS.maxY; y += GRID_SPACING_M) {
       const py = this.mvt.modelToViewY(y);
       ctx.beginPath();
       ctx.moveTo(left, py);

@@ -9,6 +9,7 @@
 
 import {
   BasicActionsKeyboardHelpSection,
+  ComboBoxKeyboardHelpSection,
   // SliderControlsKeyboardHelpSection,
   // TimeControlsKeyboardHelpSection,
   TwoColumnKeyboardHelpContent,
@@ -16,14 +17,14 @@ import {
 
 export class ExploreKeyboardHelpContent extends TwoColumnKeyboardHelpContent {
   public constructor() {
-    const leftColumn = [new BasicActionsKeyboardHelpSection()];
+    const leftColumn = [new ComboBoxKeyboardHelpSection()];
 
     // Right column — uncomment when the sim adds sliders and/or TimeControlNode:
     // const rightColumn = [
     //   new SliderControlsKeyboardHelpSection(),
     //   // new TimeControlsKeyboardHelpSection(),
     // ];
-    const rightColumn: never[] = [];
+    const rightColumn = [new BasicActionsKeyboardHelpSection({ withCheckboxContent: true })];
 
     super(leftColumn, rightColumn);
   }

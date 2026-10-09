@@ -19,6 +19,7 @@
         "takeCharge": "Drag onto the board, or press Enter or Space to add a charge.",
         "probe": "Electric field probe",
         "moveProbe": "Drag or use arrow keys to measure at another point.",
+        "chargePresets": "Charge configurations",
         "reset": "Reset all"
       }
     }
@@ -35,6 +36,18 @@
     "negativeOneNc": "−1 nC",
     "removeLast": "Remove last",
     "clearCharges": "Clear all",
+    "chargePresets": "Configurations",
+    "snapToGrid": "Snap charges to grid",
+    "presets": {
+      "custom": "Custom",
+      "dipole": "Dipole",
+      "likePair": "Two positive charges",
+      "line": "Line of positive charges",
+      "alternatingLine": "Alternating charge line",
+      "square": "Square of positive charges",
+      "quadrupole": "Quadrupole",
+      "parallelPlates": "Parallel plates"
+    },
     "display": "Display",
     "showVectors": "Field vectors",
     "showLines": "Field lines",
