@@ -40,6 +40,50 @@ describe("electrostatic field", () => {
     expect(line.length).toBeLessThanOrEqual(1801);
   });
 
+  it("ends field lines at a zero between like charges without veering off the axis", () => {
+    const angle = 0.6;
+    const axis = { x: Math.cos(angle), y: Math.sin(angle) };
+    const centre = { x: 0.4, y: -0.3 };
+    const smallCharge = { x: centre.x - 1.5 * axis.x, y: centre.y - 1.5 * axis.y, q: 1 };
+    const largeCharge = { x: centre.x + 1.5 * axis.x, y: centre.y + 1.5 * axis.y, q: 4 };
+    const charges = [smallCharge, largeCharge];
+    // The null is one metre from the smaller charge, toward the larger one.
+    const nullPoint = { x: smallCharge.x + axis.x, y: smallCharge.y + axis.y };
+    for (const [charge, sign] of [
+      [smallCharge, 1],
+      [largeCharge, -1],
+    ] as const) {
+      const seed = {
+        x: charge.x + sign * 0.18 * axis.x - 1e-12 * axis.y,
+        y: charge.y + sign * 0.18 * axis.y + 1e-12 * axis.x,
+      };
+      const line = traceFieldLine(charges, seed, FIELD_BOUNDS);
+      const end = line.at(-1);
+      expect(line.length).toBeGreaterThan(10);
+      expect(end).toBeDefined();
+      expect(Math.hypot((end?.x ?? 0) - nullPoint.x, (end?.y ?? 0) - nullPoint.y)).toBeLessThan(0.004);
+      expect(line.every((p) => Math.abs((p.x - centre.x) * axis.y - (p.y - centre.y) * axis.x) < 1e-4)).toBe(true);
+    }
+  });
+
+  it("draws both inward lines in the two-positive-charge preset", () => {
+    const charges = [
+      { x: -1.5, y: 0, q: 1 },
+      { x: 1.5, y: 0, q: 1 },
+    ];
+    const lines = automaticFieldLines(charges, FIELD_BOUNDS);
+    for (const source of charges) {
+      const inward = lines.find((line) => {
+        const first = line[0];
+        return first && Math.abs(first.x - (source.x - Math.sign(source.x) * 0.18)) < 0.01 && Math.abs(first.y) < 1e-4;
+      });
+      expect(inward).toBeDefined();
+      const end = inward?.at(-1);
+      expect(Math.hypot(end?.x ?? Infinity, end?.y ?? Infinity)).toBeLessThan(0.004);
+      expect(inward?.every((p) => Math.abs(p.y) < 1e-4)).toBe(true);
+    }
+  });
+
   it("generates automatic lines for a single negative charge", () => {
     expect(automaticFieldLines([{ x: 0, y: 0, q: -1 }], FIELD_BOUNDS)).toHaveLength(12);
   });

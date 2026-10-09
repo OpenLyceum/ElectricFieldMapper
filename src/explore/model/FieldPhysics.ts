@@ -5,6 +5,8 @@ export type FieldBounds = { minX: number; maxX: number; minY: number; maxY: numb
 
 export const K_NC = 8.9875517923; // (N m²/C²) × 1 nC, yielding V/m at 1 m.
 export const CHARGE_RADIUS = 0.15; // m, visible disk and singularity cutoff.
+const FIELD_NULL_STOP_SCALE = 0.002; // m, below a screen pixel at the standard board scale.
+const FIELD_NULL_STEP_FRACTION = 0.45;
 
 export function electricField(charges: readonly Charge[], p: Point): Point {
   let x = 0;
@@ -40,6 +42,24 @@ function direction(charges: readonly Charge[], p: Point): Point | null {
   const field = electricField(charges, p);
   const magnitude = Math.hypot(field.x, field.y);
   return Number.isFinite(magnitude) && magnitude > 1e-9 ? { x: field.x / magnitude, y: field.y / magnitude } : null;
+}
+
+/** Estimate how far the field is from a nearby zero using its local spatial derivative. */
+function fieldVariationScale(charges: readonly Charge[], p: Point, magnitude: number): number {
+  let xx = 0;
+  let xy = 0;
+  let yy = 0;
+  for (const charge of charges) {
+    const dx = p.x - charge.x;
+    const dy = p.y - charge.y;
+    const r2 = dx * dx + dy * dy;
+    const scale = (K_NC * charge.q) / (r2 * r2 * Math.sqrt(r2));
+    xx += scale * (r2 - 3 * dx * dx);
+    xy -= scale * 3 * dx * dy;
+    yy += scale * (r2 - 3 * dy * dy);
+  }
+  const gradient = Math.hypot(xx, xy, xy, yy);
+  return gradient > 0 ? magnitude / gradient : Infinity;
 }
 
 function rk4(charges: readonly Charge[], p: Point, step: number): Point | null {
@@ -81,8 +101,16 @@ function traceOneWay(charges: readonly Charge[], seed: Point, bounds: FieldBound
     if (closest <= CHARGE_RADIUS * 0.95) {
       break;
     }
-    const tangent = direction(charges, current);
-    if (!tangent) {
+    const field = electricField(charges, current);
+    const magnitude = Math.hypot(field.x, field.y);
+    if (!(Number.isFinite(magnitude) && magnitude > 1e-9)) {
+      break;
+    }
+    const tangent = { x: field.x / magnitude, y: field.y / magnitude };
+    const variationScale = fieldVariationScale(charges, current, magnitude);
+    // A normalized field has no direction at a zero. As a line approaches one,
+    // shrink the step with the local field scale so RK4 never samples across it.
+    if (variationScale < FIELD_NULL_STOP_SCALE) {
       break;
     }
     // Limit turning to roughly 5° per step, and prevent crossing a charge.
@@ -95,7 +123,11 @@ function traceOneWay(charges: readonly Charge[], seed: Point, bounds: FieldBound
         stepSize = Math.min(0.1, stepSize * 1.15);
       }
     }
-    const next = rk4(charges, current, sign * Math.min(stepSize, closest * 0.38));
+    const next = rk4(
+      charges,
+      current,
+      sign * Math.min(stepSize, closest * 0.38, variationScale * FIELD_NULL_STEP_FRACTION),
+    );
     if (!(next && Number.isFinite(next.x + next.y)) || Math.hypot(next.x - current.x, next.y - current.y) < 1e-8) {
       break;
     }
