@@ -89,25 +89,87 @@ const ElectricFieldMapperColors = {
     default: "#8598ad",
     projector: "#617083",
   }),
+  // ── Charges (shaded spheres, as in PhET's Charges and Fields) ────────────────
   positiveChargeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "positiveCharge", {
-    default: "#e65a65",
-    projector: "#c22636",
+    default: "rgb(245,60,44)",
+    projector: "rgb(245,60,44)",
+  }),
+  positiveChargeHighlightColorProperty: new ProfileColorProperty(
+    ElectricFieldMapperNamespace,
+    "positiveChargeHighlight",
+    { default: "rgb(255,43,79)", projector: "rgb(255,43,79)" },
+  ),
+  positiveChargeEdgeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "positiveChargeEdge", {
+    default: "rgb(232,9,0)",
+    projector: "rgb(232,9,0)",
   }),
   negativeChargeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "negativeCharge", {
-    default: "#4c78e9",
-    projector: "#2555bf",
+    default: "rgb(44,190,245)",
+    projector: "rgb(44,190,245)",
   }),
-  chargeOutlineColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "chargeOutline", {
+  negativeChargeHighlightColorProperty: new ProfileColorProperty(
+    ElectricFieldMapperNamespace,
+    "negativeChargeHighlight",
+    { default: "rgb(79,207,255)", projector: "rgb(79,207,255)" },
+  ),
+  negativeChargeEdgeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "negativeChargeEdge", {
+    default: "rgb(0,169,232)",
+    projector: "rgb(0,169,232)",
+  }),
+  /** The + and − signs drawn on the charge spheres. */
+  chargeSignColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "chargeSign", {
     default: "#ffffff",
-    projector: "#202a40",
+    projector: "#ffffff",
   }),
-  probeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "probe", {
-    default: "#f5cc54",
-    projector: "#f0ba32",
+
+  // ── Electric field sensors ───────────────────────────────────────────────────
+  fieldSensorFillColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "fieldSensorFill", {
+    default: "rgb(255,255,0)",
+    projector: "rgb(255,153,0)",
   }),
-  probeDetailColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "probeDetail", {
-    default: "#603c0e",
-    projector: "#402500",
+  fieldSensorStrokeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "fieldSensorStroke", {
+    default: "rgb(128,120,133)",
+    projector: "#000000",
+  }),
+  fieldSensorArrowColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "fieldSensorArrow", {
+    default: "rgb(255,0,0)",
+    projector: "rgb(255,0,0)",
+  }),
+  fieldSensorLabelColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "fieldSensorLabel", {
+    default: "rgb(229,229,126)",
+    projector: "#000000",
+  }),
+
+  // ── Voltage map, voltmeter, and equipotentials ──────────────────────────────
+  /** Fully saturated colour for positive potential on the voltage map. */
+  potentialPositiveColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "potentialPositive", {
+    default: "rgb(210,0,0)",
+    projector: "rgb(210,0,0)",
+  }),
+  /** Fully saturated colour for negative potential on the voltage map. */
+  potentialNegativeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "potentialNegative", {
+    default: "rgb(0,0,255)",
+    projector: "rgb(0,0,255)",
+  }),
+  equipotentialLineColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "equipotentialLine", {
+    default: "rgb(50,255,100)",
+    projector: "#000000",
+  }),
+  voltmeterCrosshairColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "voltmeterCrosshair", {
+    default: "#ffffff",
+    projector: "#000000",
+  }),
+  voltmeterBodyColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "voltmeterBody", {
+    default: "#5b6270",
+    projector: "#5b6270",
+  }),
+  voltmeterBodyStrokeColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "voltmeterBodyStroke", {
+    default: "#c8ccd4",
+    projector: "#30343c",
+  }),
+  voltmeterTitleColorProperty: new ProfileColorProperty(ElectricFieldMapperNamespace, "voltmeterTitle", {
+    default: "#ffffff",
+    projector: "#ffffff",
   }),
 
   // ── Light control surfaces ───────────────────────────────────────────────────

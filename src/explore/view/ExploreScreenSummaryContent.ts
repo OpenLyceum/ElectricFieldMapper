@@ -7,8 +7,17 @@ export class ExploreScreenSummaryContent extends ScreenSummaryContent {
   public constructor(model: ExploreModel) {
     const a11y = StringManager.getInstance().getExploreA11yStrings();
     const details = new DerivedProperty(
-      [model.changeCountProperty],
-      () => `${model.charges.length} charges. ${model.seedPoints.length} drawn field lines.`,
+      [
+        model.changeCountProperty,
+        model.sensors.lengthProperty,
+        model.voltmeterActiveProperty,
+        model.showVoltageProperty,
+      ],
+      () =>
+        `${model.charges.length} charges. ${model.sensors.length} electric field sensors. ` +
+        `Voltmeter ${model.voltmeterActiveProperty.value ? "on the board" : "in the toolbox"}. ` +
+        `Voltage map ${model.showVoltageProperty.value ? "shown" : "hidden"}. ` +
+        `${model.seedPoints.length} drawn field lines. ${model.equipotentialSeeds.length} equipotential lines.`,
     );
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,

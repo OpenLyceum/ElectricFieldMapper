@@ -6,19 +6,25 @@
   "a11y": {
     "explore": {
       "screenSummary": {
-        "playArea": "Positive and negative charges create an electric field. The board shows field vectors and electric field lines.",
-        "controlArea": "Drag charges from the charge box onto the board or back to the box to remove them. Change the overlays, draw field lines, and move the probe to read field strength and potential.",
-        "interactionHint": "Drag a charge from the box onto the board. Drag it back to the box to remove it. Turn on Tap to draw, then tap the board to place field lines."
+        "playArea": "Positive and negative charges create an electric field. The board can show field vectors, field lines, a red and blue voltage map, and equipotential lines.",
+        "controlArea": "Drag charges and electric field sensors from the box onto the board, or back to the box to remove them. Drag the voltmeter from the toolbox to read potential and plot equipotentials. Change the overlays and draw field lines.",
+        "interactionHint": "Drag a charge or sensor from the box onto the board. Drag it back to the box to remove it. Turn on Tap to draw, then tap the board to place field lines."
       },
-      "currentDetails": "Charges and field probe are ready.",
+      "currentDetails": "Charges are ready. Field sensors and the voltmeter are in their boxes.",
       "controls": {
         "playArea": "Field board. When Tap to draw is selected, tap to place a field line.",
         "positiveCharge": "Positive one nanocoulomb charge",
         "negativeCharge": "Negative one nanocoulomb charge",
         "moveCharge": "Drag or use arrow keys to move the charge. Drag it to the charge box or press Delete to remove it.",
         "takeCharge": "Drag onto the board, or press Enter or Space to add a charge.",
-        "probe": "Electric field probe",
-        "moveProbe": "Drag or use arrow keys to measure at another point.",
+        "fieldSensor": "Electric field sensor",
+        "moveFieldSensor": "Drag or use arrow keys to measure the field elsewhere. Drag it to the box or press Delete to remove it.",
+        "takeFieldSensor": "Drag onto the board, or press Enter or Space to add an electric field sensor.",
+        "voltmeter": "Voltmeter",
+        "moveVoltmeter": "Drag or use arrow keys to measure the potential elsewhere. Drag it to the toolbox or press Delete to put it away.",
+        "takeVoltmeter": "Drag onto the board, or press Enter or Space to use the voltmeter.",
+        "plotEquipotential": "Plot equipotential line through the crosshair",
+        "clearEquipotentials": "Erase equipotential lines",
         "reset": "Reset all"
       }
     }
@@ -38,15 +44,19 @@
     "display": "Display",
     "showVectors": "Field vectors",
     "showLines": "Field lines",
+    "showVoltage": "Voltage",
     "automaticLines": "Automatic lines",
     "showGrid": "Grid",
     "draw": "Draw lines",
     "drawMode": "Tap to draw",
-    "seedAtProbe": "Line at probe",
+    "seedAtProbe": "Line at voltmeter",
     "clearLines": "Clear drawn lines",
-    "probe": "Field probe",
-    "hint": "Drag charges from the box onto the board and back to remove them. Select Tap to draw, then tap the board.",
+    "hint": "Drag charges and sensors from the box onto the board and back to remove them. Select Tap to draw, then tap the board.",
     "fieldStrength": "Field strength",
-    "potential": "Potential"
+    "potential": "Potential",
+    "sensors": "Sensors",
+    "tools": "Tools",
+    "voltmeter": "Voltmeter",
+    "direction": "Direction"
   }
 }

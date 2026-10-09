@@ -6,19 +6,25 @@
   "a11y": {
     "explore": {
       "screenSummary": {
-        "playArea": "Las cargas positivas y negativas crean un campo eléctrico. El tablero muestra vectores y líneas de campo.",
-        "controlArea": "Arrastra cargas de la caja al tablero o devuélvelas a la caja para quitarlas. Cambia las capas, dibuja líneas y mueve la sonda para medir el campo y el potencial.",
-        "interactionHint": "Arrastra una carga de la caja al tablero. Devuélvela a la caja para quitarla. Activa Tocar para dibujar y toca el tablero."
+        "playArea": "Las cargas positivas y negativas crean un campo eléctrico. El tablero puede mostrar vectores, líneas de campo, un mapa de voltaje rojo y azul y líneas equipotenciales.",
+        "controlArea": "Arrastra cargas y sensores de campo de la caja al tablero, o devuélvelos para quitarlos. Arrastra el voltímetro desde las herramientas para medir el potencial y trazar equipotenciales. Cambia las capas y dibuja líneas.",
+        "interactionHint": "Arrastra una carga o un sensor de la caja al tablero. Devuélvelo a la caja para quitarlo. Activa Tocar para dibujar y toca el tablero."
       },
-      "currentDetails": "Las cargas y la sonda están listas.",
+      "currentDetails": "Las cargas están listas. Los sensores y el voltímetro están guardados.",
       "controls": {
         "playArea": "Tablero de campo. Al activar Tocar para dibujar, toca para colocar una línea de campo.",
         "positiveCharge": "Carga positiva de un nanoculombio",
         "negativeCharge": "Carga negativa de un nanoculombio",
         "moveCharge": "Arrastra o usa las flechas para mover la carga. Devuélvela a la caja o pulsa Supr para quitarla.",
         "takeCharge": "Arrastra al tablero o pulsa Intro o Espacio para añadir una carga.",
-        "probe": "Sonda de campo eléctrico",
-        "moveProbe": "Arrastra o usa las flechas para medir en otro punto.",
+        "fieldSensor": "Sensor de campo eléctrico",
+        "moveFieldSensor": "Arrastra o usa las flechas para medir el campo en otro punto. Devuélvelo a la caja o pulsa Supr para quitarlo.",
+        "takeFieldSensor": "Arrastra al tablero o pulsa Intro o Espacio para añadir un sensor de campo.",
+        "voltmeter": "Voltímetro",
+        "moveVoltmeter": "Arrastra o usa las flechas para medir el potencial en otro punto. Devuélvelo a las herramientas o pulsa Supr para guardarlo.",
+        "takeVoltmeter": "Arrastra al tablero o pulsa Intro o Espacio para usar el voltímetro.",
+        "plotEquipotential": "Trazar la equipotencial que pasa por la mira",
+        "clearEquipotentials": "Borrar las equipotenciales",
         "reset": "Restablecer todo"
       }
     }
@@ -38,15 +44,19 @@
     "display": "Mostrar",
     "showVectors": "Vectores de campo",
     "showLines": "Líneas de campo",
+    "showVoltage": "Voltaje",
     "automaticLines": "Líneas automáticas",
     "showGrid": "Cuadrícula",
     "draw": "Dibujar líneas",
     "drawMode": "Tocar para dibujar",
-    "seedAtProbe": "Línea en la sonda",
+    "seedAtProbe": "Línea en el voltímetro",
     "clearLines": "Borrar líneas",
-    "probe": "Sonda de campo",
-    "hint": "Arrastra cargas de la caja al tablero y devuélvelas para quitarlas. Activa Tocar para dibujar y toca el tablero.",
+    "hint": "Arrastra cargas y sensores de la caja al tablero y devuélvelos para quitarlos. Activa Tocar para dibujar y toca el tablero.",
     "fieldStrength": "Intensidad",
-    "potential": "Potencial"
+    "potential": "Potencial",
+    "sensors": "Sensores",
+    "tools": "Herramientas",
+    "voltmeter": "Voltímetro",
+    "direction": "Dirección"
   }
 }

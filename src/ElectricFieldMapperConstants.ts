@@ -27,11 +27,20 @@ export const SCREEN_VIEW_MARGIN = 20;
 /** Corner radius shared by control panels and dialogs. */
 export const PANEL_CORNER_RADIUS = 6;
 
-/** Size and icon positions of the reusable charge toolbox (screen pixels). */
+/** Size of the charges-and-sensors toolbox and the row of its three icons (screen pixels). */
 export const CHARGE_TOOLBOX_WIDTH = 236;
 export const CHARGE_TOOLBOX_HEIGHT = 76;
-export const CHARGE_TOOLBOX_ICON_X = 59;
+export const CHARGE_TOOLBOX_ICON_INSET = 40;
 export const CHARGE_TOOLBOX_ICON_Y = 29;
+
+/** Radius of a drawn charge sphere (screen pixels); close to CHARGE_RADIUS on the board. */
+export const CHARGE_VIEW_RADIUS = 12;
+
+/** Radius of the yellow electric field sensor disk (screen pixels). */
+export const FIELD_SENSOR_VIEW_RADIUS = 7;
+
+/** Radius of the voltmeter crosshair ring (screen pixels). */
+export const VOLTMETER_CROSSHAIR_RADIUS = 18;
 
 // ── Physics / model defaults (SI units) ───────────────────────────────────────
 
@@ -42,6 +51,9 @@ ElectricFieldMapperNamespace.register("ElectricFieldMapperConstants", {
   PANEL_CORNER_RADIUS,
   CHARGE_TOOLBOX_WIDTH,
   CHARGE_TOOLBOX_HEIGHT,
-  CHARGE_TOOLBOX_ICON_X,
+  CHARGE_TOOLBOX_ICON_INSET,
   CHARGE_TOOLBOX_ICON_Y,
+  CHARGE_VIEW_RADIUS,
+  FIELD_SENSOR_VIEW_RADIUS,
+  VOLTMETER_CROSSHAIR_RADIUS,
 });

@@ -1,9 +1,9 @@
-import { Vector2 } from "scenerystack/dot";
+import type { Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Circle, KeyboardListener, Node, RichDragListener, Text } from "scenerystack/scenery";
-import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
+import { KeyboardListener, Node, RichDragListener } from "scenerystack/scenery";
+import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import type { ExploreModel, PointCharge } from "../model/ExploreModel.js";
+import { type ExploreModel, KEYBOARD_DRAG_BOUNDS_PROPERTY, type PointCharge } from "../model/ExploreModel.js";
 
 export class ChargeNode extends Node {
   public readonly dragListener: RichDragListener;
@@ -23,20 +23,9 @@ export class ChargeNode extends Node {
         charge.q > 0 ? a11y.controls.positiveChargeStringProperty : a11y.controls.negativeChargeStringProperty,
       accessibleHelpText: a11y.controls.moveChargeStringProperty,
     });
-    const circle = new Circle(16, {
-      fill:
-        charge.q > 0
-          ? ElectricFieldMapperColors.positiveChargeColorProperty
-          : ElectricFieldMapperColors.negativeChargeColorProperty,
-      stroke: ElectricFieldMapperColors.chargeOutlineColorProperty,
-      lineWidth: 2.5,
-    });
-    const sign = new Text(charge.q > 0 ? "+" : "−", {
-      font: "bold 24px sans-serif",
-      fill: ElectricFieldMapperColors.chargeOutlineColorProperty,
-      center: Vector2.ZERO,
-    });
-    this.children = [circle, sign];
+    const sphere = new ChargeRepresentationNode(charge.q);
+    this.children = [sphere];
+    this.touchArea = sphere.localBounds.dilated(6);
     const update = (position: Vector2): void => {
       this.translation = mvt.modelToViewPosition(position);
       model.notifyChanged();
@@ -46,7 +35,11 @@ export class ChargeNode extends Node {
       positionProperty: charge.positionProperty,
       transform: mvt,
       dragListenerOptions: { applyOffset: false },
-      keyboardDragListenerOptions: { dragSpeed: 90, shiftDragSpeed: 30 },
+      keyboardDragListenerOptions: {
+        dragSpeed: 90,
+        shiftDragSpeed: 30,
+        dragBoundsProperty: KEYBOARD_DRAG_BOUNDS_PROPERTY,
+      },
       end: (event) => {
         if (event) {
           onDrop(charge);
@@ -65,8 +58,7 @@ export class ChargeNode extends Node {
       this.dragListener.dispose();
       this.removeInputListener(removeWithKeyboard);
       removeWithKeyboard.dispose();
-      circle.dispose();
-      sign.dispose();
+      sphere.dispose();
     });
   }
 }

@@ -1,22 +1,22 @@
-import { DerivedProperty } from "scenerystack/axon";
-import { Bounds2, Vector2 } from "scenerystack/dot";
+import type { TReadOnlyProperty } from "scenerystack/axon";
+import { Bounds2, Vector2, type Vector2Property } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import {
-  Circle,
   DragListener,
   HBox,
   KeyboardListener,
   Node,
   PressListener,
+  type PressListenerEvent,
   Rectangle,
-  RichDragListener,
   Text,
   VBox,
 } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { Checkbox, RectangularPushButton } from "scenerystack/sun";
+import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
 import {
   FLAT_PANEL_PUSH_BUTTON_OPTIONS,
   FLAT_RESET_ALL_BUTTON_OPTIONS,
@@ -25,19 +25,35 @@ import { ElectricFieldMapperPanel } from "../../common/ElectricFieldMapperPanel.
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import {
   CHARGE_TOOLBOX_HEIGHT,
-  CHARGE_TOOLBOX_ICON_X,
+  CHARGE_TOOLBOX_ICON_INSET,
   CHARGE_TOOLBOX_ICON_Y,
   CHARGE_TOOLBOX_WIDTH,
   SCREEN_VIEW_MARGIN,
 } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import { type ExploreModel, FIELD_BOUNDS, type PointCharge } from "../model/ExploreModel.js";
-import { electricField, electricPotential } from "../model/FieldPhysics.js";
+import { type ElectricFieldSensor, type ExploreModel, FIELD_BOUNDS, type PointCharge } from "../model/ExploreModel.js";
 import { ChargeNode } from "./ChargeNode.js";
+import { createFieldSensorDisk, ElectricFieldSensorNode } from "./ElectricFieldSensorNode.js";
 import { ExploreScreenSummaryContent } from "./ExploreScreenSummaryContent.js";
 import { FieldCanvasNode } from "./FieldCanvasNode.js";
+import { createVoltmeterIcon, VoltmeterNode } from "./VoltmeterNode.js";
 
 export type ExploreScreenViewOptions = ScreenViewOptions;
+
+/**
+ * Moves a released item back inside the board, `margin` metres from its edges. Only assigns when
+ * the position actually changes: a drag can end while its position is still notifying listeners.
+ */
+function clampToBoard(positionProperty: Vector2Property, margin: number): void {
+  const p = positionProperty.value;
+  const clamped = new Vector2(
+    Math.max(FIELD_BOUNDS.minX + margin, Math.min(FIELD_BOUNDS.maxX - margin, p.x)),
+    Math.max(FIELD_BOUNDS.minY + margin, Math.min(FIELD_BOUNDS.maxY - margin, p.y)),
+  );
+  if (!clamped.equals(p)) {
+    positionProperty.value = clamped;
+  }
+}
 
 export class ExploreScreenView extends ScreenView {
   public constructor(model: ExploreModel, providedOptions?: ExploreScreenViewOptions) {
@@ -86,22 +102,23 @@ export class ExploreScreenView extends ScreenView {
     this.addChild(board);
     this.addChild(new FieldCanvasNode(model, mvt, boardBounds));
 
+    // Both boxes are created below; drop handlers only run after construction.
+    let chargeBox: Node | null = null;
+    let toolBox: Node | null = null;
+    const isOver = (box: Node | null, modelPoint: Vector2): boolean =>
+      box !== null &&
+      this.globalToLocalBounds(box.getGlobalBounds()).containsPoint(mvt.modelToViewPosition(modelPoint));
+
+    // ── Charges ────────────────────────────────────────────────────────────────
     const chargeLayer = new Node();
     const chargeNodes = new Map<PointCharge, ChargeNode>();
-    let chargeBox: Node | null = null;
     const finishChargeDrag = (charge: PointCharge): void => {
-      const position = charge.positionProperty.value;
-      const viewPosition = mvt.modelToViewPosition(position);
-      if (chargeBox && this.globalToLocalBounds(chargeBox.getGlobalBounds()).containsPoint(viewPosition)) {
+      if (isOver(chargeBox, charge.positionProperty.value)) {
         model.removeCharge(charge);
         return;
       }
       // Charges follow the pointer into the toolbox, but settle inside the field when released elsewhere.
-      const clamped = new Vector2(
-        Math.max(FIELD_BOUNDS.minX + 0.18, Math.min(FIELD_BOUNDS.maxX - 0.18, position.x)),
-        Math.max(FIELD_BOUNDS.minY + 0.18, Math.min(FIELD_BOUNDS.maxY - 0.18, position.y)),
-      );
-      charge.positionProperty.value = clamped;
+      clampToBoard(charge.positionProperty, 0.18);
     };
     const addChargeNode = (charge: PointCharge): void => {
       const node = new ChargeNode(charge, model, mvt, finishChargeDrag);
@@ -121,113 +138,132 @@ export class ExploreScreenView extends ScreenView {
     model.charges.elementRemovedEmitter.addListener(removeChargeNode);
     this.addChild(chargeLayer);
 
-    const probe = new Node({
-      cursor: "grab",
-      tagName: "div",
-      focusable: true,
-      accessibleName: a11y.controls.probeStringProperty,
-      accessibleHelpText: a11y.controls.moveProbeStringProperty,
-      children: [
-        new Circle(13, {
-          fill: ElectricFieldMapperColors.probeColorProperty,
-          stroke: ElectricFieldMapperColors.probeDetailColorProperty,
-          lineWidth: 2,
-        }),
-        new Circle(3, { fill: ElectricFieldMapperColors.probeDetailColorProperty }),
-      ],
-    });
-    model.probePositionProperty.link((p) => {
-      probe.translation = mvt.modelToViewPosition(p);
-    });
-    probe.addInputListener(
-      new RichDragListener({
-        positionProperty: model.probePositionProperty,
-        transform: mvt,
-        mapPosition: (p) =>
-          new Vector2(
-            Math.max(FIELD_BOUNDS.minX + 0.16, Math.min(FIELD_BOUNDS.maxX - 0.16, p.x)),
-            Math.max(FIELD_BOUNDS.minY + 0.16, Math.min(FIELD_BOUNDS.maxY - 0.16, p.y)),
-          ),
-        dragListenerOptions: {},
-        keyboardDragListenerOptions: { dragSpeed: 90, shiftDragSpeed: 30 },
-      }),
-    );
-    this.addChild(probe);
-
-    const button = (label: typeof ui.addPositiveStringProperty, action: () => void, name = label) =>
-      new RectangularPushButton({
-        ...FLAT_PANEL_PUSH_BUTTON_OPTIONS,
-        content: new Text(label, {
-          font: "bold 13px sans-serif",
-          fill: ElectricFieldMapperColors.controlSurfaceTextColorProperty,
-        }),
-        accessibleName: name,
-        listener: action,
-      });
-    const check = (property: typeof model.showLinesProperty, label: typeof ui.showLinesStringProperty) =>
-      new Checkbox(
-        property,
-        new Text(label, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty }),
-        { checkboxColor: ElectricFieldMapperColors.textColorProperty, spacing: 8, accessibleName: label },
-      );
-    const nextPosition = () => {
-      const i = model.charges.length;
-      return { x: Math.min(2.8, -0.6 + 0.35 * i), y: Math.min(2, -0.6 + 0.2 * (i % 4)) };
+    // ── Electric field sensors ─────────────────────────────────────────────────
+    const sensorLayer = new Node();
+    const sensorNodes = new Map<ElectricFieldSensor, ElectricFieldSensorNode>();
+    const finishSensorDrag = (sensor: ElectricFieldSensor): void => {
+      if (isOver(chargeBox, sensor.positionProperty.value)) {
+        model.removeSensor(sensor);
+        return;
+      }
+      clampToBoard(sensor.positionProperty, 0.1);
     };
-    const chargeIcon = (q: 1 | -1): Node => {
-      const icon = new Node({
+    const addSensorNode = (sensor: ElectricFieldSensor): void => {
+      const node = new ElectricFieldSensorNode(sensor, model, mvt, finishSensorDrag);
+      sensorNodes.set(sensor, node);
+      sensorLayer.addChild(node);
+    };
+    const removeSensorNode = (sensor: ElectricFieldSensor): void => {
+      const node = sensorNodes.get(sensor);
+      if (node) {
+        sensorLayer.removeChild(node);
+        node.dispose();
+        sensorNodes.delete(sensor);
+      }
+    };
+    model.sensors.forEach(addSensorNode);
+    model.sensors.elementAddedEmitter.addListener(addSensorNode);
+    model.sensors.elementRemovedEmitter.addListener(removeSensorNode);
+    this.addChild(sensorLayer);
+
+    // ── Voltmeter ──────────────────────────────────────────────────────────────
+    // The voltmeter is large and usually carried by its body, so any overlap with the toolbox puts it away.
+    const voltmeter = new VoltmeterNode(model, mvt, () => {
+      if (toolBox?.getGlobalBounds().intersectsBounds(voltmeter.getGlobalBounds())) {
+        model.voltmeterActiveProperty.value = false;
+        return;
+      }
+      clampToBoard(model.voltmeterPositionProperty, 0.05);
+    });
+    this.addChild(voltmeter);
+
+    // ── Toolbox items ──────────────────────────────────────────────────────────
+    /** Where keyboard-added items appear, staggered so they do not stack exactly. */
+    const nextPosition = (count: number) => ({
+      x: Math.min(2.8, -0.6 + 0.35 * count),
+      y: Math.min(2, -0.6 + 0.2 * (count % 4)),
+    });
+    /**
+     * A toolbox entry: pressing it creates an item at the icon and forwards the press so the
+     * new item is dragged straight away; Enter or Space places one for keyboard users.
+     */
+    const toolboxItem = (
+      icon: Node,
+      label: TReadOnlyProperty<string> | null,
+      accessibleName: TReadOnlyProperty<string>,
+      helpText: TReadOnlyProperty<string>,
+      startDrag: (event: PressListenerEvent, modelPoint: Vector2) => void,
+      placeWithKeyboard: () => void,
+    ): Node => {
+      const item = new Node({
         cursor: "grab",
         tagName: "button",
         focusable: true,
-        accessibleName: q > 0 ? a11y.controls.positiveChargeStringProperty : a11y.controls.negativeChargeStringProperty,
-        accessibleHelpText: a11y.controls.takeChargeStringProperty,
-        children: [
-          new Circle(16, {
-            fill:
-              q > 0
-                ? ElectricFieldMapperColors.positiveChargeColorProperty
-                : ElectricFieldMapperColors.negativeChargeColorProperty,
-            stroke: ElectricFieldMapperColors.chargeOutlineColorProperty,
-            lineWidth: 2.5,
-          }),
-          new Text(q > 0 ? "+" : "−", {
-            font: "bold 24px sans-serif",
-            fill: ElectricFieldMapperColors.chargeOutlineColorProperty,
-            center: Vector2.ZERO,
-          }),
-          new Text(q > 0 ? ui.positiveOneNcStringProperty : ui.negativeOneNcStringProperty, {
+        accessibleName,
+        accessibleHelpText: helpText,
+        children: [icon],
+      });
+      if (label) {
+        item.addChild(
+          new Text(label, {
             font: "13px sans-serif",
             fill: ElectricFieldMapperColors.textColorProperty,
             centerX: 0,
             top: 21,
+            maxWidth: 70,
           }),
-        ],
-      });
-      icon.translation = new Vector2(
-        q > 0 ? CHARGE_TOOLBOX_ICON_X : CHARGE_TOOLBOX_WIDTH - CHARGE_TOOLBOX_ICON_X,
-        CHARGE_TOOLBOX_ICON_Y,
-      );
-      icon.addInputListener(
+        );
+      }
+      item.addInputListener(
         DragListener.createForwardingListener((event) => {
           const viewPoint = this.globalToLocalPoint(icon.localToGlobalPoint(Vector2.ZERO));
-          const charge = model.addCharge(q, mvt.viewToModelPosition(viewPoint));
+          startDrag(event, mvt.viewToModelPosition(viewPoint));
+        }),
+      );
+      item.addInputListener(new KeyboardListener({ keys: ["enter", "space"], fire: placeWithKeyboard }));
+      return item;
+    };
+    const chargeItem = (q: 1 | -1): Node =>
+      toolboxItem(
+        new ChargeRepresentationNode(q),
+        q > 0 ? ui.positiveOneNcStringProperty : ui.negativeOneNcStringProperty,
+        q > 0 ? a11y.controls.positiveChargeStringProperty : a11y.controls.negativeChargeStringProperty,
+        a11y.controls.takeChargeStringProperty,
+        (event, modelPoint) => {
+          const charge = model.addCharge(q, modelPoint);
           const node = chargeNodes.get(charge);
           if (!node?.dragListener.dragListener.press(event, node)) {
             model.removeCharge(charge);
           }
-        }),
+        },
+        () => {
+          const charge = model.addCharge(q, nextPosition(model.charges.length));
+          chargeNodes.get(charge)?.focus();
+        },
       );
-      icon.addInputListener(
-        new KeyboardListener({
-          keys: ["enter", "space"],
-          fire: () => {
-            const charge = model.addCharge(q, nextPosition());
-            chargeNodes.get(charge)?.focus();
-          },
-        }),
-      );
-      return icon;
-    };
+    const sensorItem = toolboxItem(
+      createFieldSensorDisk(),
+      ui.sensorsStringProperty,
+      a11y.controls.fieldSensorStringProperty,
+      a11y.controls.takeFieldSensorStringProperty,
+      (event, modelPoint) => {
+        const sensor = model.addSensor(modelPoint);
+        const node = sensorNodes.get(sensor);
+        if (!node?.dragListener.dragListener.press(event, node)) {
+          model.removeSensor(sensor);
+        }
+      },
+      () => {
+        const p = nextPosition(model.sensors.length);
+        const sensor = model.addSensor({ x: p.x + 0.2, y: p.y + 1 });
+        sensorNodes.get(sensor)?.focus();
+      },
+    );
+    const positiveItem = chargeItem(1);
+    const negativeItem = chargeItem(-1);
+    positiveItem.translation = new Vector2(CHARGE_TOOLBOX_ICON_INSET, CHARGE_TOOLBOX_ICON_Y);
+    negativeItem.translation = new Vector2(CHARGE_TOOLBOX_WIDTH / 2, CHARGE_TOOLBOX_ICON_Y);
+    sensorItem.translation = new Vector2(CHARGE_TOOLBOX_WIDTH - CHARGE_TOOLBOX_ICON_INSET, CHARGE_TOOLBOX_ICON_Y);
     chargeBox = new Node({
       children: [
         new Rectangle(0, 0, CHARGE_TOOLBOX_WIDTH, CHARGE_TOOLBOX_HEIGHT, {
@@ -236,10 +272,74 @@ export class ExploreScreenView extends ScreenView {
           lineWidth: 2,
           cornerRadius: 5,
         }),
-        chargeIcon(1),
-        chargeIcon(-1),
+        positiveItem,
+        negativeItem,
+        sensorItem,
       ],
     });
+
+    // The voltmeter icon's origin is its crosshair, so a pulled-out voltmeter starts right under it.
+    const voltmeterIcon = createVoltmeterIcon({ scale: 0.6 });
+    const voltmeterItem = toolboxItem(
+      voltmeterIcon,
+      null,
+      a11y.controls.voltmeterStringProperty,
+      a11y.controls.takeVoltmeterStringProperty,
+      (event, modelPoint) => {
+        model.voltmeterPositionProperty.value = modelPoint;
+        model.voltmeterActiveProperty.value = true;
+        if (!voltmeter.dragListener.dragListener.press(event, voltmeter)) {
+          model.voltmeterActiveProperty.value = false;
+        }
+      },
+      () => {
+        model.voltmeterPositionProperty.reset();
+        model.voltmeterActiveProperty.value = true;
+        voltmeter.dragHandle.focus();
+      },
+    );
+    model.voltmeterActiveProperty.link((active) => {
+      voltmeterItem.visible = !active;
+    });
+    const toolBoxHeight = voltmeterIcon.height + 16;
+    voltmeterItem.centerX = CHARGE_TOOLBOX_WIDTH / 2;
+    voltmeterItem.top = 8;
+    toolBox = new Node({
+      children: [
+        new Rectangle(0, 0, CHARGE_TOOLBOX_WIDTH, toolBoxHeight, {
+          fill: ElectricFieldMapperColors.playAreaColorProperty,
+          stroke: ElectricFieldMapperColors.panelBorderColorProperty,
+          lineWidth: 2,
+          cornerRadius: 5,
+        }),
+        voltmeterItem,
+      ],
+    });
+
+    // ── Control panel ──────────────────────────────────────────────────────────
+    const button = (label: typeof ui.addPositiveStringProperty, action: () => void) =>
+      new RectangularPushButton({
+        ...FLAT_PANEL_PUSH_BUTTON_OPTIONS,
+        content: new Text(label, {
+          font: "bold 13px sans-serif",
+          fill: ElectricFieldMapperColors.controlSurfaceTextColorProperty,
+          maxWidth: 200,
+        }),
+        accessibleName: label,
+        listener: action,
+      });
+    const check = (property: typeof model.showLinesProperty, label: typeof ui.showLinesStringProperty) =>
+      new Checkbox(
+        property,
+        new Text(label, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty, maxWidth: 190 }),
+        { checkboxColor: ElectricFieldMapperColors.textColorProperty, spacing: 8, boxWidth: 16, accessibleName: label },
+      );
+    const heading = (label: typeof ui.chargesStringProperty) =>
+      new Text(label, {
+        font: "bold 16px sans-serif",
+        fill: ElectricFieldMapperColors.textColorProperty,
+        maxWidth: 230,
+      });
     const removeLast = button(ui.removeLastStringProperty, () => {
       const last = model.charges[model.charges.length - 1];
       if (last) {
@@ -251,80 +351,53 @@ export class ExploreScreenView extends ScreenView {
         model.removeCharge(charge);
       }
     });
-    const showVectors = check(model.showVectorsProperty, ui.showVectorsStringProperty);
-    const showLines = check(model.showLinesProperty, ui.showLinesStringProperty);
-    const automaticLines = check(model.automaticLinesProperty, ui.automaticLinesStringProperty);
-    const showGrid = check(model.showGridProperty, ui.showGridStringProperty);
-    const drawMode = check(model.drawModeProperty, ui.drawModeStringProperty);
-    const seedAtProbe = button(ui.seedAtProbeStringProperty, () => {
-      const p = model.probePositionProperty.value;
+    const seedAtVoltmeter = button(ui.seedAtProbeStringProperty, () => {
+      const p = model.voltmeterPositionProperty.value;
       if (!model.isNearCharge(p)) {
         model.addSeed(p);
       }
     });
+    model.voltmeterActiveProperty.link((enabled) => {
+      seedAtVoltmeter.enabled = enabled;
+    });
     const clearLines = button(ui.clearLinesStringProperty, () => model.clearSeeds());
-    const fieldReadout = new DerivedProperty(
-      [model.changeCountProperty, model.probePositionProperty, ui.fieldStrengthStringProperty],
-      () => {
-        const p = model.probePositionProperty.value;
-        const field = electricField(model.getSnapshot(), p);
-        const strength = Math.hypot(field.x, field.y);
-        return `${ui.fieldStrengthStringProperty.value} ${Number.isFinite(strength) ? strength.toFixed(2) : "∞"} V/m`;
-      },
-    );
-    const potentialReadout = new DerivedProperty(
-      [model.changeCountProperty, model.probePositionProperty, ui.potentialStringProperty],
-      () => {
-        const potential = electricPotential(model.getSnapshot(), model.probePositionProperty.value);
-        return `${ui.potentialStringProperty.value} ${Number.isFinite(potential) ? potential.toFixed(2) : "∞"} V`;
-      },
-    );
     const panel = new ElectricFieldMapperPanel(
       new VBox({
         align: "left",
-        spacing: 10,
+        spacing: 7,
         children: [
-          new Text(ui.chargesStringProperty, {
-            font: "bold 18px sans-serif",
-            fill: ElectricFieldMapperColors.textColorProperty,
-          }),
+          heading(ui.chargesStringProperty),
           chargeBox,
           new HBox({ spacing: 6, children: [removeLast, clearCharges] }),
-          new Text(ui.displayStringProperty, {
-            font: "bold 18px sans-serif",
-            fill: ElectricFieldMapperColors.textColorProperty,
-          }),
-          showVectors,
-          showLines,
-          automaticLines,
-          showGrid,
-          new Text(ui.drawStringProperty, {
-            font: "bold 18px sans-serif",
-            fill: ElectricFieldMapperColors.textColorProperty,
-          }),
-          drawMode,
-          seedAtProbe,
-          clearLines,
-          new Text(ui.probeStringProperty, {
-            font: "bold 18px sans-serif",
-            fill: ElectricFieldMapperColors.textColorProperty,
-          }),
-          new Text(fieldReadout, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty }),
-          new Text(potentialReadout, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty }),
+          heading(ui.displayStringProperty),
+          check(model.showVectorsProperty, ui.showVectorsStringProperty),
+          check(model.showLinesProperty, ui.showLinesStringProperty),
+          check(model.automaticLinesProperty, ui.automaticLinesStringProperty),
+          check(model.showVoltageProperty, ui.showVoltageStringProperty),
+          check(model.showGridProperty, ui.showGridStringProperty),
+          heading(ui.drawStringProperty),
+          check(model.drawModeProperty, ui.drawModeStringProperty),
+          new HBox({ spacing: 6, children: [seedAtVoltmeter, clearLines] }),
+          heading(ui.toolsStringProperty),
+          toolBox,
         ],
       }),
-      { xMargin: 12, yMargin: 12 },
+      { xMargin: 12, yMargin: 10 },
     );
     panel.right = bounds.maxX - SCREEN_VIEW_MARGIN;
-    panel.top = SCREEN_VIEW_MARGIN;
+    panel.top = SCREEN_VIEW_MARGIN - 6;
     this.addChild(panel);
+    // Items dragged out of the boxes must draw above the panel; the voltmeter is the largest, so it goes under sensors.
+    voltmeter.moveToFront();
     chargeLayer.moveToFront();
+    sensorLayer.moveToFront();
 
     const hint = new Text(ui.hintStringProperty, {
       font: "14px sans-serif",
       fill: ElectricFieldMapperColors.textColorProperty,
       left: boardBounds.minX,
       top: boardBounds.maxY + 9,
+      maxWidth: boardBounds.width,
     });
     this.addChild(hint);
     const reset = new ResetAllButton({
@@ -338,6 +411,6 @@ export class ExploreScreenView extends ScreenView {
       accessibleName: a11y.controls.resetStringProperty,
     });
     this.addChild(reset);
-    this.addChild(new Node({ pdomOrder: [chargeLayer, probe, panel, reset] }));
+    this.addChild(new Node({ pdomOrder: [chargeLayer, sensorLayer, voltmeter, panel, reset] }));
   }
 }

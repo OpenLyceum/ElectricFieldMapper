@@ -6,19 +6,25 @@
   "a11y": {
     "explore": {
       "screenSummary": {
-        "playArea": "Les charges positives et négatives créent un champ électrique. La zone affiche vecteurs et lignes de champ.",
-        "controlArea": "Glissez les charges de la boîte vers la zone ou ramenez-les dans la boîte pour les retirer. Changez les affichages, tracez des lignes et déplacez la sonde.",
-        "interactionHint": "Glissez une charge de la boîte vers la zone. Ramenez-la dans la boîte pour la retirer. Activez le tracé puis touchez la zone."
+        "playArea": "Les charges positives et négatives créent un champ électrique. La zone peut afficher vecteurs, lignes de champ, une carte de tension rouge et bleue et des équipotentielles.",
+        "controlArea": "Glissez charges et capteurs de champ de la boîte vers la zone, ou ramenez-les pour les retirer. Glissez le voltmètre depuis les outils pour lire le potentiel et tracer des équipotentielles. Changez les affichages et tracez des lignes.",
+        "interactionHint": "Glissez une charge ou un capteur de la boîte vers la zone. Ramenez-le dans la boîte pour le retirer. Activez le tracé puis touchez la zone."
       },
-      "currentDetails": "Les charges et la sonde sont prêtes.",
+      "currentDetails": "Les charges sont prêtes. Les capteurs et le voltmètre sont rangés.",
       "controls": {
         "playArea": "Zone du champ. Quand le tracé est activé, touchez pour placer une ligne.",
         "positiveCharge": "Charge positive de un nanocoulomb",
         "negativeCharge": "Charge négative de un nanocoulomb",
         "moveCharge": "Glissez ou utilisez les flèches pour déplacer la charge. Ramenez-la dans la boîte ou appuyez sur Suppr pour la retirer.",
         "takeCharge": "Glissez vers la zone ou appuyez sur Entrée ou Espace pour ajouter une charge.",
-        "probe": "Sonde de champ électrique",
-        "moveProbe": "Glissez ou utilisez les flèches pour mesurer ailleurs.",
+        "fieldSensor": "Capteur de champ électrique",
+        "moveFieldSensor": "Glissez ou utilisez les flèches pour mesurer le champ ailleurs. Ramenez-le dans la boîte ou appuyez sur Suppr pour le retirer.",
+        "takeFieldSensor": "Glissez vers la zone ou appuyez sur Entrée ou Espace pour ajouter un capteur de champ.",
+        "voltmeter": "Voltmètre",
+        "moveVoltmeter": "Glissez ou utilisez les flèches pour mesurer le potentiel ailleurs. Ramenez-le dans les outils ou appuyez sur Suppr pour le ranger.",
+        "takeVoltmeter": "Glissez vers la zone ou appuyez sur Entrée ou Espace pour utiliser le voltmètre.",
+        "plotEquipotential": "Tracer l’équipotentielle passant par le réticule",
+        "clearEquipotentials": "Effacer les équipotentielles",
         "reset": "Tout réinitialiser"
       }
     }
@@ -38,15 +44,19 @@
     "display": "Affichage",
     "showVectors": "Vecteurs du champ",
     "showLines": "Lignes de champ",
+    "showVoltage": "Tension",
     "automaticLines": "Lignes automatiques",
     "showGrid": "Grille",
     "draw": "Tracer des lignes",
     "drawMode": "Toucher pour tracer",
-    "seedAtProbe": "Ligne à la sonde",
+    "seedAtProbe": "Ligne au voltmètre",
     "clearLines": "Effacer les lignes",
-    "probe": "Sonde de champ",
-    "hint": "Glissez les charges de la boîte vers la zone et ramenez-les pour les retirer. Activez le tracé puis touchez la zone.",
+    "hint": "Glissez charges et capteurs de la boîte vers la zone et ramenez-les pour les retirer. Activez le tracé puis touchez la zone.",
     "fieldStrength": "Intensité",
-    "potential": "Potentiel"
+    "potential": "Potentiel",
+    "sensors": "Capteurs",
+    "tools": "Outils",
+    "voltmeter": "Voltmètre",
+    "direction": "Direction"
   }
 }

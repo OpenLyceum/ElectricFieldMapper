@@ -132,3 +132,106 @@ export function automaticFieldLines(charges: readonly Charge[], bounds: FieldBou
   }
   return lines;
 }
+
+/** Unit vector perpendicular to E, i.e. tangent to the local equipotential. */
+function equipotentialDirection(charges: readonly Charge[], p: Point): Point | null {
+  const tangent = direction(charges, p);
+  return tangent ? { x: -tangent.y, y: tangent.x } : null;
+}
+
+/** Pulls a point back onto V = target along the field, cancelling integration drift. */
+function projectOntoPotential(charges: readonly Charge[], p: Point, target: number): Point {
+  const field = electricField(charges, p);
+  const magnitude2 = field.x * field.x + field.y * field.y;
+  const potential = electricPotential(charges, p);
+  if (!(Number.isFinite(magnitude2) && Number.isFinite(potential)) || magnitude2 < 1e-12) {
+    return p;
+  }
+  // E = −∇V, so a Newton step toward the target potential moves along +E when V is too high.
+  const scale = (potential - target) / magnitude2;
+  return { x: p.x + scale * field.x, y: p.y + scale * field.y };
+}
+
+function traceEquipotentialOneWay(
+  charges: readonly Charge[],
+  seed: Point,
+  bounds: FieldBounds,
+  target: number,
+  sign: 1 | -1,
+): { points: Point[]; closed: boolean } {
+  const points: Point[] = [];
+  const step = 0.03;
+  let current = seed;
+  let travelled = 0;
+  for (let i = 0; i < 2000; i++) {
+    const k1 = equipotentialDirection(charges, current);
+    if (!k1) {
+      break;
+    }
+    const k2 = equipotentialDirection(charges, {
+      x: current.x + (sign * step * k1.x) / 2,
+      y: current.y + (sign * step * k1.y) / 2,
+    });
+    const k3 =
+      k2 &&
+      equipotentialDirection(charges, {
+        x: current.x + (sign * step * k2.x) / 2,
+        y: current.y + (sign * step * k2.y) / 2,
+      });
+    const k4 =
+      k3 && equipotentialDirection(charges, { x: current.x + sign * step * k3.x, y: current.y + sign * step * k3.y });
+    if (!(k2 && k3 && k4)) {
+      break;
+    }
+    const next = projectOntoPotential(
+      charges,
+      {
+        x: current.x + (sign * step * (k1.x + 2 * k2.x + 2 * k3.x + k4.x)) / 6,
+        y: current.y + (sign * step * (k1.y + 2 * k2.y + 2 * k3.y + k4.y)) / 6,
+      },
+      target,
+    );
+    if (!Number.isFinite(next.x + next.y)) {
+      break;
+    }
+    travelled += Math.hypot(next.x - current.x, next.y - current.y);
+    points.push(next);
+    current = next;
+    // A closed loop returns to the seed after travelling well away from it.
+    if (travelled > 4 * step && Math.hypot(current.x - seed.x, current.y - seed.y) < step * 0.75) {
+      return { points, closed: true };
+    }
+    if (current.x < bounds.minX || current.x > bounds.maxX || current.y < bounds.minY || current.y > bounds.maxY) {
+      break;
+    }
+  }
+  return { points, closed: false };
+}
+
+/**
+ * Traces the equipotential through the seed. Closed curves return to the seed; open curves
+ * are traced in both directions until they leave the bounds.
+ */
+export function traceEquipotential(charges: readonly Charge[], seed: Point, bounds: FieldBounds): Point[] {
+  const target = electricPotential(charges, seed);
+  if (charges.length === 0 || !Number.isFinite(target) || !direction(charges, seed)) {
+    return [];
+  }
+  const forward = traceEquipotentialOneWay(charges, seed, bounds, target, 1);
+  if (forward.closed) {
+    return [seed, ...forward.points, seed];
+  }
+  const backward = traceEquipotentialOneWay(charges, seed, bounds, target, -1).points.reverse();
+  return [...backward, seed, ...forward.points];
+}
+
+/** Potential (V) at which the voltage map reaches full red or blue. */
+export const POTENTIAL_SATURATION = 40;
+
+/** Signed potential mapped to [−1, 1] for the red/blue voltage colouring. */
+export function potentialColorFraction(potential: number): number {
+  if (Number.isNaN(potential)) {
+    return 0;
+  }
+  return Math.max(-1, Math.min(1, potential / POTENTIAL_SATURATION));
+}
