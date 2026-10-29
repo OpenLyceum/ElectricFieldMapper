@@ -20,7 +20,7 @@ A SceneryStack simulation for exploring electric fields created by point charges
 
 ## Quick Start
 
-Requires Node 24 or later.
+Requires Node 26 or later.
 
 ```bash
 npm install
