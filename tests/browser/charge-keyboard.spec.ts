@@ -73,6 +73,7 @@ for (const snap of [false, true]) {
       await focusPositiveCharge(page);
       await page.keyboard.down(key);
       try {
+        // biome-ignore lint/suspicious/noPlaywrightWaitForTimeout: holds the key down for a fixed time; the test measures how far it moved.
         await page.waitForTimeout(700);
         const held = await readChargeState(page);
         expect(held.inside).toBe(true);
