@@ -45,7 +45,10 @@ function launchFromQuery(): ExploreLaunchOptions {
   };
 }
 
-/** Initial field area, before the view reports how much of the model the browser window shows. */
+/**
+ * Initial field area, before the view reports how much of the model the browser window shows.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const FIELD_BOUNDS: FieldBounds = { minX: -4, maxX: 4, minY: -3, maxY: 3 };
 
 /** The field never extends past these bounds, however wide or tall the window becomes (metres). */

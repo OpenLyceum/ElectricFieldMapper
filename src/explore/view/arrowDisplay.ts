@@ -1,12 +1,21 @@
 import type { ArrowScale } from "../../common/model/FieldDisplayOptions.js";
 
-/** Field strength (V/m) at which a clipped-linear arrow reaches its full length. */
+/**
+ * Field strength (V/m) at which a clipped-linear arrow reaches its full length.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const LINEAR_ARROW_REFERENCE_VM = 30;
 
-/** Pixel length of a clipped-linear arrow at or above {@link LINEAR_ARROW_REFERENCE_VM}. */
+/**
+ * Pixel length of a clipped-linear arrow at or above {@link LINEAR_ARROW_REFERENCE_VM}.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const LINEAR_ARROW_MAX_LENGTH = 18;
 
-/** Shortest clipped-linear arrow. Weaker samples stay this long so their direction remains visible. */
+/**
+ * Shortest clipped-linear arrow. Weaker samples stay this long so their direction remains visible.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const LINEAR_ARROW_MIN_LENGTH = 3;
 
 /**
