@@ -34,6 +34,4 @@ Run `npm run lint && npm run check && npm run build && npm test` in this directo
 
 ## Compliance carve-outs
 
-- **Template drift:** `prepare` guards on the local Git root. This new checkout currently has no writable member-repo `.git`, so an unguarded `npm install` would otherwise change the parent superproject hook setting.
-
 - **Hardcoded colors (computed):** `src/explore/view/potentialColor.ts` generates RGB/RGBA CSS by blending `ElectricFieldMapperColors` profile values; this is not an independent hardcoded palette.
