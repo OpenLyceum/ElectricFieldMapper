@@ -40,6 +40,7 @@ Checkbox query parameters are `showVectors`, `showLines`, `automaticLines`, `sho
 | `npm start` | Start the development server |
 | `npm run check` | Type check app, scripts, and tests |
 | `npm run lint` | Check style with Biome |
+| `npm run knip` | Report unused files, exports, and dependencies (manual check) |
 | `npm test` | Run model, physics, and disposal tests |
 | `npm run test:fuzz:quick` | Run pointer and keyboard browser fuzz checks |
 | `npx playwright test tests/browser` | Run keyboard and preference browser regressions |

@@ -5,7 +5,7 @@ export type Point = { x: number; y: number };
 export type Charge = Point & { q: number };
 export type FieldBounds = { minX: number; maxX: number; minY: number; maxY: number };
 
-export const K_NC = 8.9875517923; // (N m²/C²) × 1 nC, yielding V/m at 1 m.
+const K_NC = 8.9875517923; // (N m²/C²) × 1 nC, yielding V/m at 1 m.
 export const CHARGE_RADIUS = 0.15; // m, visible disk and singularity cutoff.
 const FIELD_NULL_STOP_SCALE = 0.002; // m, below a screen pixel at the standard board scale.
 const FIELD_NULL_STEP_FRACTION = 0.45;

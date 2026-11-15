@@ -13,7 +13,6 @@ export type ArrowScale = (typeof ARROW_SCALES)[number];
  * The count is illustrative; it is not a flux measurement.
  */
 export const LINES_PER_NANOCOULOMB = [8, 12, 16, 24] as const;
-export type LinesPerNanocoulomb = (typeof LINES_PER_NANOCOULOMB)[number];
 
 /** Preferences that change how the field is drawn and survive Reset All. */
 export type FieldDisplayPreferences = {
@@ -24,11 +23,11 @@ export type FieldDisplayPreferences = {
   readonly showFieldZerosProperty: TReadOnlyProperty<boolean>;
 };
 
-export function isVoltageScale(value: string): value is VoltageScale {
+function isVoltageScale(value: string): value is VoltageScale {
   return (VOLTAGE_SCALES as readonly string[]).includes(value);
 }
 
-export function isArrowScale(value: string): value is ArrowScale {
+function isArrowScale(value: string): value is ArrowScale {
   return (ARROW_SCALES as readonly string[]).includes(value);
 }
 
