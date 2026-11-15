@@ -1,4 +1,4 @@
-import type { Point } from "./FieldPhysics.js";
+import type { Point } from "./Point.js";
 
 /** Values accepted by the configuration combo box and the `preset` query parameter. */
 export const CHARGE_PRESET_VALUES = [

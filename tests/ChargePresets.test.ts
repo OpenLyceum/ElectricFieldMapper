@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { CHARGE_PRESETS } from "../src/common/model/ChargePresets.js";
 import { GRID_SPACING_M } from "../src/ElectricFieldMapperConstants.js";
-import { CHARGE_PRESETS } from "../src/explore/model/ChargePresets.js";
 import { ExploreModel, FIELD_BOUNDS } from "../src/explore/model/ExploreModel.js";
 import { automaticFieldLines, electricField, electricPotential } from "../src/explore/model/FieldPhysics.js";
 

@@ -1,6 +1,6 @@
 import { QueryStringMachine } from "scenerystack/query-string-machine";
 import { describe, expect, it } from "vitest";
-import { CHARGE_PRESETS } from "../src/explore/model/ChargePresets.js";
+import { CHARGE_PRESETS } from "../src/common/model/ChargePresets.js";
 import { ExploreModel } from "../src/explore/model/ExploreModel.js";
 import electricFieldMapperQueryParameters from "../src/preferences/electricFieldMapperQueryParameters.js";
 

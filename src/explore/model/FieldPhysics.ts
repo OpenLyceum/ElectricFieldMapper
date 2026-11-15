@@ -1,7 +1,9 @@
 import type { VoltageScale } from "../../common/model/FieldDisplayOptions.js";
+import type { Point } from "../../common/model/Point.js";
+
+export type { Point } from "../../common/model/Point.js";
 
 /** Coulomb field and adaptive field-line tracing. Coordinates are metres, charges nC. */
-export type Point = { x: number; y: number };
 export type Charge = Point & { q: number };
 export type FieldBounds = { minX: number; maxX: number; minY: number; maxY: number };
 

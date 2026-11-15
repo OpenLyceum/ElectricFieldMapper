@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHARGE_PRESETS } from "../src/explore/model/ChargePresets.js";
+import { CHARGE_PRESETS } from "../src/common/model/ChargePresets.js";
 import { FIELD_BOUNDS } from "../src/explore/model/ExploreModel.js";
 import {
   automaticFieldLines,
