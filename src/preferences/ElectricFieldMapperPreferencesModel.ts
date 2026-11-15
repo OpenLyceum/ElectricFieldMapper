@@ -1,6 +1,5 @@
 import { BooleanProperty, NumberProperty, StringProperty } from "scenerystack/axon";
 import type { Tandem } from "scenerystack/tandem";
-import ElectricFieldMapperNamespace from "../ElectricFieldMapperNamespace.js";
 import {
   ARROW_SCALES,
   asArrowScale,
@@ -8,7 +7,8 @@ import {
   type FieldDisplayPreferences,
   LINES_PER_NANOCOULOMB,
   VOLTAGE_SCALES,
-} from "../explore/model/FieldDisplayOptions.js";
+} from "../common/model/FieldDisplayOptions.js";
+import ElectricFieldMapperNamespace from "../ElectricFieldMapperNamespace.js";
 import electricFieldMapperQueryParameters from "./electricFieldMapperQueryParameters.js";
 
 export class ElectricFieldMapperPreferencesModel {

@@ -10,10 +10,10 @@ import {
 } from "scenerystack/axon";
 import { Bounds2, Vector2, Vector2Property } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
+import { CHARGE_PRESETS, type ChargePreset, isChargePreset } from "../../common/model/ChargePresets.js";
+import type { FieldDisplayPreferences } from "../../common/model/FieldDisplayOptions.js";
 import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import electricFieldMapperQueryParameters from "../../preferences/electricFieldMapperQueryParameters.js";
-import { CHARGE_PRESETS, type ChargePreset, isChargePreset } from "./ChargePresets.js";
-import type { FieldDisplayPreferences } from "./FieldDisplayOptions.js";
 import { CHARGE_RADIUS, combineCoincidentCharges, type FieldBounds, type Point } from "./FieldPhysics.js";
 
 /** Opening checkbox and configuration state. Omitted fields use the page query parameters. */

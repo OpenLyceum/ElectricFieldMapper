@@ -1,10 +1,10 @@
 import type { Bounds2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode } from "scenerystack/scenery";
+import { asArrowScale, asVoltageScale } from "../../common/model/FieldDisplayOptions.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
-import { asArrowScale, asVoltageScale } from "../model/FieldDisplayOptions.js";
 import {
   automaticFieldLines,
   electricField,

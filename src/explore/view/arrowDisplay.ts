@@ -1,4 +1,4 @@
-import type { ArrowScale } from "../model/FieldDisplayOptions.js";
+import type { ArrowScale } from "../../common/model/FieldDisplayOptions.js";
 
 /** Field strength (V/m) at which a clipped-linear arrow reaches its full length. */
 export const LINEAR_ARROW_REFERENCE_VM = 30;

@@ -16,11 +16,11 @@ import {
 import { EraserButton } from "scenerystack/scenery-phet";
 import { RectangularPushButton } from "scenerystack/sun";
 import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
+import { asVoltageScale } from "../../common/model/FieldDisplayOptions.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { VOLTMETER_CROSSHAIR_RADIUS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
-import { asVoltageScale } from "../model/FieldDisplayOptions.js";
 import { electricPotential, potentialSaturation } from "../model/FieldPhysics.js";
 import { formatSignificant } from "./formatReadout.js";
 import { potentialCSS } from "./potentialColor.js";

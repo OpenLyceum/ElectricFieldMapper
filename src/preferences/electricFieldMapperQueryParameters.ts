@@ -1,8 +1,8 @@
 import { logGlobal } from "scenerystack/phet-core";
 import { QueryStringMachine } from "scenerystack/query-string-machine";
+import { CHARGE_PRESET_VALUES } from "../common/model/ChargePresets.js";
+import { ARROW_SCALES, LINES_PER_NANOCOULOMB, VOLTAGE_SCALES } from "../common/model/FieldDisplayOptions.js";
 import ElectricFieldMapperNamespace from "../ElectricFieldMapperNamespace.js";
-import { CHARGE_PRESET_VALUES } from "../explore/model/ChargePresets.js";
-import { ARROW_SCALES, LINES_PER_NANOCOULOMB, VOLTAGE_SCALES } from "../explore/model/FieldDisplayOptions.js";
 
 /**
  * Public launch options. Booleans are `true` or `false`. An unrecognized value falls back to the default.

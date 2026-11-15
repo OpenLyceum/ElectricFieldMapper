@@ -3,9 +3,9 @@ import { HBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { AquaRadioButtonGroup, type AquaRadioButtonGroupOptions, Checkbox } from "scenerystack/sun";
 import type { Tandem } from "scenerystack/tandem";
+import { LINES_PER_NANOCOULOMB } from "../common/model/FieldDisplayOptions.js";
 import ElectricFieldMapperColors from "../ElectricFieldMapperColors.js";
 import ElectricFieldMapperNamespace from "../ElectricFieldMapperNamespace.js";
-import { LINES_PER_NANOCOULOMB } from "../explore/model/FieldDisplayOptions.js";
 import { StringManager } from "../i18n/StringManager.js";
 import type { ElectricFieldMapperPreferencesModel } from "./ElectricFieldMapperPreferencesModel.js";
 
