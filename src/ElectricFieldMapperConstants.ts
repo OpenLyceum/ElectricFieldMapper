@@ -82,16 +82,16 @@ export const ELECTRIC_FIELD_MAPPER_CONTROL_OPTIONS_SETTINGS = {
   NUMBER_CONTROL_SLIDER_TRACK_SIZE_HEIGHT: 3,
   /** Checkbox box width (px). */
   CHECKBOX_BOX_WIDTH: 16,
-  /** Electric field mapper number control options scale (dimensionless). */
-  ELECTRIC_FIELD_MAPPER_NUMBER_CONTROL_OPTIONS_SCALE: 0.75,
-  /** Electric field mapper number control options slider padding (px). */
-  ELECTRIC_FIELD_MAPPER_NUMBER_CONTROL_OPTIONS_SLIDER_PADDING: 4,
-  /** Electric field mapper number control options arrow button spacing (px). */
-  ELECTRIC_FIELD_MAPPER_NUMBER_CONTROL_OPTIONS_ARROW_BUTTON_SPACING: 3,
-  /** Electric field mapper number control options vertical spacing (px). */
-  ELECTRIC_FIELD_MAPPER_NUMBER_CONTROL_OPTIONS_VERTICAL_SPACING: 4,
-  /** Electric field mapper checkbox options spacing (px). */
-  ELECTRIC_FIELD_MAPPER_CHECKBOX_OPTIONS_SPACING: 4,
+  /** NumberControl arrow-button scale (dimensionless). */
+  NUMBER_CONTROL_SCALE: 0.75,
+  /** NumberControl layout slider padding (px). */
+  NUMBER_CONTROL_SLIDER_PADDING: 4,
+  /** NumberControl layout arrow-button spacing (px). */
+  NUMBER_CONTROL_ARROW_BUTTON_SPACING: 3,
+  /** NumberControl layout vertical spacing (px). */
+  NUMBER_CONTROL_VERTICAL_SPACING: 4,
+  /** Checkbox label spacing (px). */
+  CHECKBOX_SPACING: 4,
 } as const;
 
 /** Settings for common/ElectricFieldMapperPanel.ts. */
@@ -188,8 +188,8 @@ export const FIELD_PHYSICS_SETTINGS = {
   FIELD_NULL_STOP_SCALE: 0.002,
   /** Field null step fraction (dimensionless). */
   FIELD_NULL_STEP_FRACTION: 0.45,
-  /** Default count (count). */
-  DEFAULT_COUNT: 12,
+  /** Default field lines per nanocoulomb when tracing automatic lines (lines/nC). */
+  LINES_PER_NANOCOULOMB_DEFAULT: 12,
   /** Potential saturation (V). */
   POTENTIAL_SATURATION: 40,
   /** Coarse spacing used to choose an automatic voltage scale from the visible board. */
@@ -240,16 +240,23 @@ export const ELECTRIC_FIELD_SENSOR_NODE_SETTINGS = {
 
 /** Settings for explore/view/ExploreScreenView.ts. */
 export const EXPLORE_SCREEN_VIEW_SETTINGS = {
-  NEXT_POSITION_X: 2.8, // px
-  NEXT_POSITION_X_FACTOR: 0.35, // dimensionless
-  NEXT_POSITION_Y_FACTOR: 0.2, // dimensionless
-  CONSTRUCTOR_NEXT_POSITION_Y_FACTOR: 4, // dimensionless
-  SENSOR_X_OFFSET: 0.2, // px
+  /** Cap on keyboard-placed charge/sensor x (m). */
+  NEXT_POSITION_X: 2.8,
+  /** X stagger per keyboard-placed item (m per count). */
+  NEXT_POSITION_X_FACTOR: 0.35,
+  /** Y stagger per keyboard-placed item (m per count). */
+  NEXT_POSITION_Y_FACTOR: 0.2,
+  /** Modulus wrapping the Y stagger cycle (count). */
+  NEXT_POSITION_Y_CYCLE: 4,
+  /** Sensor offset from a newly placed charge (m). */
+  SENSOR_X_OFFSET: 0.2,
   CONSTRUCTOR_TOP_OFFSET: 6, // px
   CONSTRUCTOR_BOTTOM_OFFSET: 4, // px
 
-  FINISH_SENSOR_DRAG_MARGIN: 0.1, // px
-  VOLTMETER_MARGIN: 0.05, // px
+  /** Margin kept from the field edge when a sensor drag ends (m). */
+  FINISH_SENSOR_DRAG_MARGIN: 0.1,
+  /** Margin kept from the field edge when the voltmeter is dragged (m). */
+  VOLTMETER_MARGIN: 0.05,
   PANEL_ITEM_3_SPACING: 6, // px
   PANEL_ITEM_16_SPACING: 6, // px
 
@@ -257,7 +264,7 @@ export const EXPLORE_SCREEN_VIEW_SETTINGS = {
   ORIGIN_VIEW_POSITION_X: 369,
   /** Origin view position y (px). */
   ORIGIN_VIEW_POSITION_Y: 284,
-  /** View pixels per metre (px). */
+  /** View pixels per metre (px/m). */
   VIEW_PIXELS_PER_METRE: 83,
   /** Toolbox item top (px). */
   TOOLBOX_ITEM_TOP: 21,
@@ -273,8 +280,8 @@ export const EXPLORE_SCREEN_VIEW_SETTINGS = {
   TAPE_ICON_SCALE: 0.8,
   /** Tools column spacing (px). */
   TOOLS_COLUMN_SPACING: 12,
-  /** Top top (px). */
-  TOP_TOP: 8,
+  /** Tools column top inset (px). */
+  TOOLS_COLUMN_TOP: 8,
   /** Button max width (px). */
   BUTTON_MAX_WIDTH: 200,
   /** Check max width (px). */
@@ -301,8 +308,8 @@ export const FIELD_CANVAS_NODE_SETTINGS = {
   VOLTAGE_CELL: 0.05,
   /** Spacing of the sampled field arrows (metres); samples sit midway between major grid lines. */
   VECTOR_SPACING: 0.5,
-  /** Line width line width (px). */
-  LINE_WIDTH_LINE_WIDTH: 1.8,
+  /** Equipotential / field-line stroke width (px). */
+  LINE_WIDTH: 1.8,
   /** Draw field zeros radius (px). */
   DRAW_FIELD_ZEROS_RADIUS: 6.5,
 } as const;
@@ -319,9 +326,9 @@ export const FIELD_LINES_INFO_DIALOG_SETTINGS = {
 export const GRID_SCALE_NODE_SETTINGS = {
   LABEL_MAX_WIDTH_OFFSET: 24, // px
 
-  /** Arrow position x (px). */
+  /** Preferred model x of the scale arrow's top-left (m). */
   ARROW_POSITION_X: 2,
-  /** Arrow position y (px). */
+  /** Preferred model y of the scale arrow's top-left (m). */
   ARROW_POSITION_Y: 2.2,
 } as const;
 
@@ -389,11 +396,11 @@ export const VOLTMETER_NODE_SETTINGS = {
 
 /** Settings for explore/view/arrowDisplay.ts. */
 export const ARROW_DISPLAY_SETTINGS = {
-  /** Linear arrow reference vm (px). */
+  /** |E| at which a clipped-linear arrow reaches full length (V/m). */
   LINEAR_ARROW_REFERENCE_VM: 30,
-  /** Linear arrow max length (count). */
+  /** Pixel length of a clipped-linear arrow at or above the reference field (px). */
   LINEAR_ARROW_MAX_LENGTH: 18,
-  /** Linear arrow min length (px). */
+  /** Minimum pixel length of a clipped-linear arrow (px). */
   LINEAR_ARROW_MIN_LENGTH: 3,
   /** Arrow display opacity (dimensionless). */
   ARROW_DISPLAY_OPACITY: 0.9,
@@ -429,9 +436,10 @@ export const ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS = {
   CONSTRUCTOR_FONT_SIZE: 18,
 } as const;
 
-/** Component dimensions in px; ratios and control steps are dimensionless; precision counts digits. */
+/** Defaults for public query parameter `linesPerNanocoulomb`. */
 export const ELECTRIC_FIELD_MAPPER_QUERY_PARAMETERS_SETTINGS = {
-  ELECTRIC_FIELD_MAPPER_QUERY_PARAMETERS_DEFAULT_VALUE: 12, // dimensionless
+  /** Default field lines per nanocoulomb (lines/nC). */
+  LINES_PER_NANOCOULOMB_DEFAULT: 12,
 } as const;
 
 /** Initial positions and dimensions for explore/model/ExploreModel.ts (m). */

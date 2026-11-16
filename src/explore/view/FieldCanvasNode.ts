@@ -118,7 +118,7 @@ export class FieldCanvasNode extends CanvasNode {
     }
     ctx.strokeStyle = ElectricFieldMapperColors.fieldLineColorProperty.value.toCSS();
     ctx.fillStyle = ctx.strokeStyle;
-    ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.LINE_WIDTH_LINE_WIDTH;
+    ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.LINE_WIDTH;
     const arrowheads = this.model.fieldLineArrowheadsProperty.value;
     for (const line of lines) {
       this.drawLine(ctx, line, arrowheads);
@@ -193,7 +193,7 @@ export class FieldCanvasNode extends CanvasNode {
 
   private drawEquipotentials(ctx: CanvasRenderingContext2D, charges: Charges, bounds: Bounds2): void {
     const color = ElectricFieldMapperColors.equipotentialLineColorProperty.value.toCSS();
-    ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.LINE_WIDTH_LINE_WIDTH;
+    ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.LINE_WIDTH;
     ctx.font = "13px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";

@@ -21,7 +21,7 @@ const electricFieldMapperQueryParameters = QueryStringMachine.getAll({
   fieldLineArrowheads: { type: "boolean", defaultValue: true, public: true },
   linesPerNanocoulomb: {
     type: "number",
-    defaultValue: ELECTRIC_FIELD_MAPPER_QUERY_PARAMETERS_SETTINGS.ELECTRIC_FIELD_MAPPER_QUERY_PARAMETERS_DEFAULT_VALUE,
+    defaultValue: ELECTRIC_FIELD_MAPPER_QUERY_PARAMETERS_SETTINGS.LINES_PER_NANOCOULOMB_DEFAULT,
     validValues: LINES_PER_NANOCOULOMB,
     public: true,
   },

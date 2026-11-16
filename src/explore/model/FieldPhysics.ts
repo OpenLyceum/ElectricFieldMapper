@@ -299,7 +299,7 @@ function symmetricPairFieldLines(charges: readonly Charge[], bounds: FieldBounds
 export function automaticFieldLines(
   sourceCharges: readonly Charge[],
   bounds: FieldBounds,
-  count: number = FIELD_PHYSICS_SETTINGS.DEFAULT_COUNT,
+  count: number = FIELD_PHYSICS_SETTINGS.LINES_PER_NANOCOULOMB_DEFAULT,
 ): Point[][] {
   const charges = combineCoincidentCharges(sourceCharges);
   const symmetricLines = symmetricPairFieldLines(charges, bounds, count);

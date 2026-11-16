@@ -33,6 +33,7 @@ import {
   CHARGE_TOOLBOX_ICON_INSET,
   CHARGE_TOOLBOX_ICON_Y,
   CHARGE_TOOLBOX_WIDTH,
+  EXPLORE_MODEL_SETTINGS,
   EXPLORE_SCREEN_VIEW_SETTINGS,
   GRID_SPACING_M,
   INFO_BUTTON_POINTER_AREA_DILATION,
@@ -135,7 +136,7 @@ export class ExploreScreenView extends ScreenView {
         return;
       }
       // Charges follow the pointer into the toolbox, but settle inside the field when released elsewhere.
-      const margin = model.snapToGridProperty.value ? GRID_SPACING_M : 0.18;
+      const margin = model.snapToGridProperty.value ? GRID_SPACING_M : EXPLORE_MODEL_SETTINGS.KEYBOARD_DRAG_MARGIN;
       clampToBoard(charge.positionProperty, model.fieldBoundsProperty.value, margin);
       if (model.snapToGridProperty.value) {
         const snapped = model.snapPosition(charge.positionProperty.value);
@@ -286,7 +287,7 @@ export class ExploreScreenView extends ScreenView {
         2,
         -0.6 +
           EXPLORE_SCREEN_VIEW_SETTINGS.NEXT_POSITION_Y_FACTOR *
-            (count % EXPLORE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_NEXT_POSITION_Y_FACTOR),
+            (count % EXPLORE_SCREEN_VIEW_SETTINGS.NEXT_POSITION_Y_CYCLE),
       ),
     });
     /**
@@ -442,7 +443,7 @@ export class ExploreScreenView extends ScreenView {
     });
     const toolBoxHeight = toolsColumn.height + 16;
     toolsColumn.centerX = CHARGE_TOOLBOX_WIDTH / 2;
-    toolsColumn.top = EXPLORE_SCREEN_VIEW_SETTINGS.TOP_TOP;
+    toolsColumn.top = EXPLORE_SCREEN_VIEW_SETTINGS.TOOLS_COLUMN_TOP;
     toolBox = new Node({
       children: [
         new Rectangle(0, 0, CHARGE_TOOLBOX_WIDTH, toolBoxHeight, {
