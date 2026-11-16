@@ -5,6 +5,7 @@ import { AquaRadioButtonGroup, type AquaRadioButtonGroupOptions, Checkbox } from
 import type { Tandem } from "scenerystack/tandem";
 import { LINES_PER_NANOCOULOMB } from "../common/model/FieldDisplayOptions.js";
 import ElectricFieldMapperColors from "../ElectricFieldMapperColors.js";
+import { ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS } from "../ElectricFieldMapperConstants.js";
 import ElectricFieldMapperNamespace from "../ElectricFieldMapperNamespace.js";
 import { StringManager } from "../i18n/StringManager.js";
 import type { ElectricFieldMapperPreferencesModel } from "./ElectricFieldMapperPreferencesModel.js";
@@ -14,16 +15,16 @@ export class ElectricFieldMapperPreferencesNode extends VBox {
     const strings = StringManager.getInstance().getPreferences();
     const textFill = ElectricFieldMapperColors.controlSurfaceTextColorProperty;
     // Each column is about half of the preferences dialog, so labels wrap inside it.
-    const columnLabelWidth = 210;
+    const columnLabelWidth: number = ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.COLUMN_LABEL_WIDTH;
     const choice = (label: TReadOnlyProperty<string> | string) =>
       new Text(label, {
-        font: new PhetFont(14),
+        font: new PhetFont(ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.CHOICE_FONT_SIZE),
         fill: textFill,
         maxWidth: columnLabelWidth,
       });
     const heading = (label: TReadOnlyProperty<string>) =>
       new Text(label, {
-        font: new PhetFont({ size: 16, weight: "bold" }),
+        font: new PhetFont({ size: ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.HEADING_FONT_SIZE, weight: "bold" }),
         fill: textFill,
         maxWidth: columnLabelWidth,
       });
@@ -33,22 +34,27 @@ export class ElectricFieldMapperPreferencesNode extends VBox {
     ): AquaRadioButtonGroupOptions => ({
       orientation: "vertical",
       align: "left",
-      spacing: 5,
+      spacing: ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.RADIO_OPTIONS_SPACING,
       accessibleName,
       ...(tandem && { tandem: tandem.createTandem(tandemName) }),
     });
-    const section = (title: Node, control: Node) => new VBox({ align: "left", spacing: 6, children: [title, control] });
+    const section = (title: Node, control: Node) =>
+      new VBox({
+        align: "left",
+        spacing: ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.SECTION_SPACING,
+        children: [title, control],
+      });
     const column = (...children: Node[]) =>
       new VBox({
         align: "left",
-        spacing: 14,
+        spacing: ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.COLUMN_SPACING,
         minContentWidth: 230,
         children,
       });
     const checkboxOptions = {
       checkboxColor: textFill,
       checkboxColorBackground: ElectricFieldMapperColors.controlSurfaceColorProperty,
-      spacing: 8,
+      spacing: ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.CHECKBOX_OPTIONS_SPACING,
     };
     const voltageScale = section(
       heading(strings.voltageScaleStringProperty),
@@ -114,15 +120,18 @@ export class ElectricFieldMapperPreferencesNode extends VBox {
 
     super({
       align: "left",
-      spacing: 14,
+      spacing: ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.CONSTRUCTOR_SPACING,
       children: [
         new Text(strings.titleStringProperty, {
-          font: new PhetFont({ size: 18, weight: "bold" }),
+          font: new PhetFont({
+            size: ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.CONSTRUCTOR_FONT_SIZE,
+            weight: "bold",
+          }),
           fill: textFill,
         }),
         new HBox({
           align: "top",
-          spacing: 24,
+          spacing: ELECTRIC_FIELD_MAPPER_PREFERENCES_NODE_SETTINGS.ITEM_2_SPACING,
           children: [column(voltageScale, arrowScale), column(fieldLineArrowheads, linesPerNanocoulomb, fieldZeros)],
         }),
       ],

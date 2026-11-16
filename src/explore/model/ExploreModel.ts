@@ -12,7 +12,12 @@ import { Bounds2, Vector2, Vector2Property } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
 import { CHARGE_PRESETS, type ChargePreset, isChargePreset } from "../../common/model/ChargePresets.js";
 import type { FieldDisplayPreferences } from "../../common/model/FieldDisplayOptions.js";
-import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
+import {
+  EXPLORE_MODEL_COORDINATES,
+  EXPLORE_MODEL_SETTINGS,
+  GRID_MINOR_LINES_PER_MAJOR,
+  GRID_SPACING_M,
+} from "../../ElectricFieldMapperConstants.js";
 import electricFieldMapperQueryParameters from "../../preferences/electricFieldMapperQueryParameters.js";
 import { CHARGE_RADIUS, combineCoincidentCharges, type FieldBounds, type Point } from "./FieldPhysics.js";
 
@@ -55,14 +60,14 @@ export const FIELD_BOUNDS: FieldBounds = { minX: -4, maxX: 4, minY: -3, maxY: 3 
 export const ENLARGED_FIELD_BOUNDS = new Bounds2(-16, -12, 16, 12);
 
 /** Distance keyboard drags keep from the edge of the field (metres). */
-const KEYBOARD_DRAG_MARGIN = 0.18;
+const KEYBOARD_DRAG_MARGIN: number = EXPLORE_MODEL_SETTINGS.KEYBOARD_DRAG_MARGIN;
 
 /** Model position where the voltmeter appears when placed from the keyboard. */
-const VOLTMETER_DEFAULT_POSITION = new Vector2(0, 1.55);
+const VOLTMETER_DEFAULT_POSITION = new Vector2(0, EXPLORE_MODEL_SETTINGS.VOLTMETER_INITIAL_Y);
 
 /** Measuring tape when placed from the keyboard: one major grid square, clear of the dipole. */
-const MEASURING_TAPE_BASE = new Vector2(0, 1.2);
-const MEASURING_TAPE_TIP = new Vector2(GRID_SPACING_M, 1.2);
+const MEASURING_TAPE_BASE = new Vector2(0, EXPLORE_MODEL_COORDINATES.MEASURING_TAPE_BASE_Y);
+const MEASURING_TAPE_TIP = new Vector2(GRID_SPACING_M, EXPLORE_MODEL_COORDINATES.MEASURING_TAPE_TIP_Y);
 
 export class PointCharge {
   public readonly positionProperty: Vector2Property;
@@ -139,7 +144,8 @@ export class ExploreModel implements TModel {
 
   public constructor(display: Partial<FieldDisplayPreferences> = {}, launch: Partial<ExploreLaunchOptions> = {}) {
     const initial = { ...launchFromQuery(), ...launch };
-    this.linesPerNanocoulombProperty = display.linesPerNanocoulombProperty ?? new NumberProperty(12);
+    this.linesPerNanocoulombProperty =
+      display.linesPerNanocoulombProperty ?? new NumberProperty(EXPLORE_MODEL_SETTINGS.LINES_PER_NANOCOULOMB_DEFAULT);
     this.voltageScaleProperty = display.voltageScaleProperty ?? new StringProperty("40");
     this.arrowScaleProperty = display.arrowScaleProperty ?? new StringProperty("compressed");
     this.fieldLineArrowheadsProperty = display.fieldLineArrowheadsProperty ?? new BooleanProperty(true);
@@ -377,7 +383,9 @@ export class ExploreModel implements TModel {
   }
   public isNearCharge(point: Point): boolean {
     return this.getSnapshot().some(
-      (charge) => Math.hypot(point.x - charge.x, point.y - charge.y) < CHARGE_RADIUS * 1.3,
+      (charge) =>
+        Math.hypot(point.x - charge.x, point.y - charge.y) <
+        CHARGE_RADIUS * EXPLORE_MODEL_SETTINGS.CHARGE_PICK_RADIUS_FACTOR,
     );
   }
   public step(_dt: number): void {

@@ -1,3 +1,4 @@
+import { ELECTRIC_FIELD_MAPPER_PANEL_SETTINGS } from "../ElectricFieldMapperConstants.js";
 /**
  * ElectricFieldMapperPanel.ts
  *
@@ -40,8 +41,8 @@ export class ElectricFieldMapperPanel extends Panel {
         fill: ElectricFieldMapperColors.panelBackgroundColorProperty,
         stroke: ElectricFieldMapperColors.panelBorderColorProperty,
         cornerRadius: PANEL_CORNER_RADIUS,
-        xMargin: 12,
-        yMargin: 10,
+        xMargin: ELECTRIC_FIELD_MAPPER_PANEL_SETTINGS.OPTIONS_X_MARGIN,
+        yMargin: ELECTRIC_FIELD_MAPPER_PANEL_SETTINGS.OPTIONS_Y_MARGIN,
       },
       providedOptions,
     );

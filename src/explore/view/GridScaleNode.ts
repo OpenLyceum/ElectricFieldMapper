@@ -3,6 +3,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Node, Text } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
+import { GRID_SCALE_NODE_SETTINGS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
 
@@ -13,7 +14,10 @@ const ARROW_LENGTH_M = 1;
  * Preferred model position of the arrow's top-left. Model y increases downward, so this sits below
  * the origin, in the same part of the board as Charges and Fields' scale arrow.
  */
-const ARROW_POSITION = new Vector2(2, 2.2);
+const ARROW_POSITION = new Vector2(
+  GRID_SCALE_NODE_SETTINGS.ARROW_POSITION_X,
+  GRID_SCALE_NODE_SETTINGS.ARROW_POSITION_Y,
+);
 
 /**
  * Double-headed arrow and "1 meter" label that show the grid scale while Values is selected.
@@ -32,7 +36,7 @@ export class GridScaleNode extends Node {
     const label = new Text(ui.oneMeterStringProperty, {
       font: "12px sans-serif",
       fill: ElectricFieldMapperColors.gridScaleTextColorProperty,
-      maxWidth: length + 24,
+      maxWidth: length + GRID_SCALE_NODE_SETTINGS.LABEL_MAX_WIDTH_OFFSET,
     });
     this.children = [arrow, label];
 

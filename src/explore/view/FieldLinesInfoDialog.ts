@@ -1,3 +1,4 @@
+import { FIELD_LINES_INFO_DIALOG_SETTINGS } from "../../ElectricFieldMapperConstants.js";
 /**
  * FieldLinesInfoDialog.ts
  *
@@ -16,13 +17,13 @@ export class FieldLinesInfoDialog extends Dialog {
   public constructor() {
     const ui = StringManager.getInstance().getUiStrings();
     const title = new Text(ui.infoTitleStringProperty, {
-      font: new PhetFont({ size: 20, weight: "bold" }),
+      font: new PhetFont({ size: FIELD_LINES_INFO_DIALOG_SETTINGS.TITLE_FONT_SIZE, weight: "bold" }),
       fill: ElectricFieldMapperColors.textColorProperty,
       maxWidth: INFO_DIALOG_LINE_WRAP,
     });
     const spokenBody = new DerivedProperty([ui.infoBodyStringProperty], (markup) => markup.replace(/<\/?b>/g, ""));
     const body = new RichText(ui.infoBodyStringProperty, {
-      font: new PhetFont(16),
+      font: new PhetFont(FIELD_LINES_INFO_DIALOG_SETTINGS.BODY_FONT_SIZE),
       fill: ElectricFieldMapperColors.textColorProperty,
       lineWrap: INFO_DIALOG_LINE_WRAP,
       accessibleParagraph: spokenBody,

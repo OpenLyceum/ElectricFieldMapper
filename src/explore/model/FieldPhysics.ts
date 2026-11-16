@@ -1,5 +1,6 @@
 import type { VoltageScale } from "../../common/model/FieldDisplayOptions.js";
 import type { Point } from "../../common/model/Point.js";
+import { FIELD_PHYSICS_SETTINGS } from "../../ElectricFieldMapperConstants.js";
 
 export type { Point } from "../../common/model/Point.js";
 
@@ -7,10 +8,10 @@ export type { Point } from "../../common/model/Point.js";
 export type Charge = Point & { q: number };
 export type FieldBounds = { minX: number; maxX: number; minY: number; maxY: number };
 
-const K_NC = 8.9875517923; // (N m²/C²) × 1 nC, yielding V/m at 1 m.
-export const CHARGE_RADIUS = 0.15; // m, visible disk and singularity cutoff.
-const FIELD_NULL_STOP_SCALE = 0.002; // m, below a screen pixel at the standard board scale.
-const FIELD_NULL_STEP_FRACTION = 0.45;
+const K_NC: number = FIELD_PHYSICS_SETTINGS.K_NC; // (N m²/C²) × 1 nC, yielding V/m at 1 m.
+export const CHARGE_RADIUS: number = FIELD_PHYSICS_SETTINGS.CHARGE_RADIUS; // m, visible disk and singularity cutoff.
+const FIELD_NULL_STOP_SCALE: number = FIELD_PHYSICS_SETTINGS.FIELD_NULL_STOP_SCALE; // m, below a screen pixel at the standard board scale.
+const FIELD_NULL_STEP_FRACTION: number = FIELD_PHYSICS_SETTINGS.FIELD_NULL_STEP_FRACTION;
 
 /** Sum charges at exactly the same position before applying singularity cutoffs or seeding lines. */
 export function combineCoincidentCharges(charges: readonly Charge[]): readonly Charge[] {
@@ -76,7 +77,9 @@ function electricPotentialFromCharges(charges: readonly Charge[], p: Point): num
 function direction(charges: readonly Charge[], p: Point): Point | null {
   const field = electricFieldFromCharges(charges, p);
   const magnitude = Math.hypot(field.x, field.y);
-  return Number.isFinite(magnitude) && magnitude > 1e-9 ? { x: field.x / magnitude, y: field.y / magnitude } : null;
+  return Number.isFinite(magnitude) && magnitude > FIELD_PHYSICS_SETTINGS.MIN_FIELD_MAGNITUDE
+    ? { x: field.x / magnitude, y: field.y / magnitude }
+    : null;
 }
 
 /** Estimate how far the field is from a nearby zero using its local spatial derivative. */
@@ -123,9 +126,9 @@ function rk4(charges: readonly Charge[], p: Point, step: number): Point | null {
 function traceOneWay(charges: readonly Charge[], seed: Point, bounds: FieldBounds, sign: 1 | -1): Point[] {
   const points: Point[] = [];
   let current = seed;
-  let stepSize = 0.035;
+  let stepSize: number = FIELD_PHYSICS_SETTINGS.INITIAL_TRACE_STEP;
   let previousDirection: Point | null = null;
-  for (let i = 0; i < 900; i++) {
+  for (let i = 0; i < FIELD_PHYSICS_SETTINGS.MAX_TRACE_STEPS; i++) {
     if (current.x < bounds.minX || current.x > bounds.maxX || current.y < bounds.minY || current.y > bounds.maxY) {
       break;
     }
@@ -133,12 +136,12 @@ function traceOneWay(charges: readonly Charge[], seed: Point, bounds: FieldBound
     for (const charge of charges) {
       closest = Math.min(closest, Math.hypot(current.x - charge.x, current.y - charge.y));
     }
-    if (closest <= CHARGE_RADIUS * 0.95) {
+    if (closest <= CHARGE_RADIUS * FIELD_PHYSICS_SETTINGS.CHARGE_STOP_RADIUS_FACTOR) {
       break;
     }
     const field = electricFieldFromCharges(charges, current);
     const magnitude = Math.hypot(field.x, field.y);
-    if (!(Number.isFinite(magnitude) && magnitude > 1e-9)) {
+    if (!(Number.isFinite(magnitude) && magnitude > FIELD_PHYSICS_SETTINGS.MIN_FIELD_MAGNITUDE)) {
       break;
     }
     const tangent = { x: field.x / magnitude, y: field.y / magnitude };
@@ -152,18 +155,32 @@ function traceOneWay(charges: readonly Charge[], seed: Point, bounds: FieldBound
     if (previousDirection) {
       const dot = Math.max(-1, Math.min(1, tangent.x * previousDirection.x + tangent.y * previousDirection.y));
       const turn = Math.acos(dot);
-      if (turn > 0.1) {
-        stepSize = Math.max(0.012, stepSize * 0.6);
-      } else if (turn < 0.025) {
-        stepSize = Math.min(0.1, stepSize * 1.15);
+      if (turn > FIELD_PHYSICS_SETTINGS.SHARP_TURN_THRESHOLD) {
+        stepSize = Math.max(
+          FIELD_PHYSICS_SETTINGS.MIN_TRACE_STEP,
+          stepSize * FIELD_PHYSICS_SETTINGS.TRACE_STEP_SHRINK_FACTOR,
+        );
+      } else if (turn < FIELD_PHYSICS_SETTINGS.SMALL_TURN_THRESHOLD) {
+        stepSize = Math.min(
+          FIELD_PHYSICS_SETTINGS.MAX_TRACE_STEP,
+          stepSize * FIELD_PHYSICS_SETTINGS.TRACE_STEP_GROWTH_FACTOR,
+        );
       }
     }
     const next = rk4(
       charges,
       current,
-      sign * Math.min(stepSize, closest * 0.38, variationScale * FIELD_NULL_STEP_FRACTION),
+      sign *
+        Math.min(
+          stepSize,
+          closest * FIELD_PHYSICS_SETTINGS.NEAREST_CHARGE_STEP_FRACTION,
+          variationScale * FIELD_NULL_STEP_FRACTION,
+        ),
     );
-    if (!(next && Number.isFinite(next.x + next.y)) || Math.hypot(next.x - current.x, next.y - current.y) < 1e-8) {
+    if (
+      !(next && Number.isFinite(next.x + next.y)) ||
+      Math.hypot(next.x - current.x, next.y - current.y) < FIELD_PHYSICS_SETTINGS.MIN_TRACE_DISPLACEMENT
+    ) {
       break;
     }
     points.push(next);
@@ -202,10 +219,13 @@ function incomingLines(
   const candidates: { angle: number; line: Point[] }[] = [];
   // The first pass keeps the familiar angles. Offset passes supply more edge lines when
   // unequal charges send a different fraction of their source lines into this sink.
-  for (let pass = 0; pass < 4 && candidates.length < needed; pass++) {
+  for (let pass = 0; pass < FIELD_PHYSICS_SETTINGS.INCOMING_SEED_PASSES && candidates.length < needed; pass++) {
     for (let i = 0; i < lineCount; i++) {
-      const angle = (2 * Math.PI * (i + pass / 4)) / lineCount;
-      const seed = { x: sink.x + 0.18 * Math.cos(angle), y: sink.y + 0.18 * Math.sin(angle) };
+      const angle = (2 * Math.PI * (i + pass / FIELD_PHYSICS_SETTINGS.INCOMING_SEED_PASSES)) / lineCount;
+      const seed = {
+        x: sink.x + FIELD_PHYSICS_SETTINGS.CHARGE_SEED_RADIUS * Math.cos(angle),
+        y: sink.y + FIELD_PHYSICS_SETTINGS.CHARGE_SEED_RADIUS * Math.sin(angle),
+      };
       const line = traceFieldLineFromCharges(charges, seed, bounds);
       const first = line[0];
       if (line.length > 1 && first && !charges.some((source) => source.q > 0 && nearCharge(first, source))) {
@@ -253,8 +273,8 @@ function symmetricPairFieldLines(charges: readonly Charge[], bounds: FieldBounds
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
       let seed = {
-        x: charge.x + 0.18 * (inward.x * cos - inward.y * sin),
-        y: charge.y + 0.18 * (inward.y * cos + inward.x * sin),
+        x: charge.x + FIELD_PHYSICS_SETTINGS.CHARGE_SEED_RADIUS * (inward.x * cos - inward.y * sin),
+        y: charge.y + FIELD_PHYSICS_SETTINGS.CHARGE_SEED_RADIUS * (inward.y * cos + inward.x * sin),
       };
       if (i === 0 || i === lineCount - 1) {
         // Move the two innermost seeds close to the null, on this charge's side.
@@ -276,7 +296,11 @@ function symmetricPairFieldLines(charges: readonly Charge[], bounds: FieldBounds
 }
 
 /** Seed around sources and fill each sink's remaining lines from the board edge. */
-export function automaticFieldLines(sourceCharges: readonly Charge[], bounds: FieldBounds, count = 12): Point[][] {
+export function automaticFieldLines(
+  sourceCharges: readonly Charge[],
+  bounds: FieldBounds,
+  count: number = FIELD_PHYSICS_SETTINGS.DEFAULT_COUNT,
+): Point[][] {
   const charges = combineCoincidentCharges(sourceCharges);
   const symmetricLines = symmetricPairFieldLines(charges, bounds, count);
   if (symmetricLines) {
@@ -291,8 +315,8 @@ export function automaticFieldLines(sourceCharges: readonly Charge[], bounds: Fi
     for (let i = 0; i < lineCount; i++) {
       const angle = (2 * Math.PI * i) / lineCount;
       const seed = {
-        x: sourceCharge.x + 0.18 * Math.cos(angle),
-        y: sourceCharge.y + 0.18 * Math.sin(angle),
+        x: sourceCharge.x + FIELD_PHYSICS_SETTINGS.CHARGE_SEED_RADIUS * Math.cos(angle),
+        y: sourceCharge.y + FIELD_PHYSICS_SETTINGS.CHARGE_SEED_RADIUS * Math.sin(angle),
       };
       const line = traceFieldLineFromCharges(charges, seed, bounds);
       const last = line.at(-1);
@@ -328,7 +352,10 @@ function projectOntoPotential(charges: readonly Charge[], p: Point, target: numb
   const field = electricFieldFromCharges(charges, p);
   const magnitude2 = field.x * field.x + field.y * field.y;
   const potential = electricPotentialFromCharges(charges, p);
-  if (!(Number.isFinite(magnitude2) && Number.isFinite(potential)) || magnitude2 < 1e-12) {
+  if (
+    !(Number.isFinite(magnitude2) && Number.isFinite(potential)) ||
+    magnitude2 < FIELD_PHYSICS_SETTINGS.MIN_PROJECTION_FIELD_SQUARED
+  ) {
     return p;
   }
   // E = −∇V, so a Newton step toward the target potential moves along +E when V is too high.
@@ -344,7 +371,7 @@ function traceEquipotentialOneWay(
   sign: 1 | -1,
 ): { points: Point[]; closed: boolean } {
   const points: Point[] = [];
-  const step = 0.03;
+  const step: number = FIELD_PHYSICS_SETTINGS.EQUIPOTENTIAL_STEP;
   let current = seed;
   let travelled = 0;
   for (let i = 0; i < 2000; i++) {
@@ -382,7 +409,10 @@ function traceEquipotentialOneWay(
     points.push(next);
     current = next;
     // A closed loop returns to the seed after travelling well away from it.
-    if (travelled > 4 * step && Math.hypot(current.x - seed.x, current.y - seed.y) < step * 0.75) {
+    if (
+      travelled > 4 * step &&
+      Math.hypot(current.x - seed.x, current.y - seed.y) < step * FIELD_PHYSICS_SETTINGS.LOOP_CLOSURE_STEP_FRACTION
+    ) {
       return { points, closed: true };
     }
     if (current.x < bounds.minX || current.x > bounds.maxX || current.y < bounds.minY || current.y > bounds.maxY) {
@@ -411,16 +441,16 @@ export function traceEquipotential(sourceCharges: readonly Charge[], seed: Point
 }
 
 /** Potential (V) at which the voltage map reaches full red or blue by default. */
-export const POTENTIAL_SATURATION = 40;
+export const POTENTIAL_SATURATION: number = FIELD_PHYSICS_SETTINGS.POTENTIAL_SATURATION;
 
 /** Coarse spacing used to choose an automatic voltage scale from the visible board. */
-const AUTO_SATURATION_SAMPLE_M = 0.25;
+const AUTO_SATURATION_SAMPLE_M: number = FIELD_PHYSICS_SETTINGS.AUTO_SATURATION_SAMPLE_M;
 
 /** Share of board samples allowed to sit at full red or blue under the automatic scale. */
-const AUTO_SATURATION_PERCENTILE = 0.9;
+const AUTO_SATURATION_PERCENTILE: number = FIELD_PHYSICS_SETTINGS.AUTO_SATURATION_PERCENTILE;
 
-const AUTO_SATURATION_MIN = 5;
-const AUTO_SATURATION_MAX = 500;
+const AUTO_SATURATION_MIN: number = FIELD_PHYSICS_SETTINGS.AUTO_SATURATION_MIN;
+const AUTO_SATURATION_MAX: number = FIELD_PHYSICS_SETTINGS.AUTO_SATURATION_MAX;
 
 /**
  * Full-scale potential (V) for the voltage map. Fixed choices are ±10, ±40, and ±200 V.
@@ -465,16 +495,16 @@ export function potentialColorFraction(potential: number, saturation = POTENTIAL
 }
 
 /** Grid spacing for the field-zero search (metres). */
-const FIELD_ZERO_GRID_M = 0.5;
+const FIELD_ZERO_GRID_M: number = FIELD_PHYSICS_SETTINGS.FIELD_ZERO_GRID_M;
 
 /** A refined point counts as a zero when |E| is below this (V/m). */
-const FIELD_ZERO_RESIDUAL = 1e-4;
+const FIELD_ZERO_RESIDUAL: number = FIELD_PHYSICS_SETTINGS.FIELD_ZERO_RESIDUAL;
 
 /** Zeros closer than this are the same point (metres). */
-const FIELD_ZERO_MERGE_M = 0.25;
+const FIELD_ZERO_MERGE_M: number = FIELD_PHYSICS_SETTINGS.FIELD_ZERO_MERGE_M;
 
-const FIELD_ZERO_MAX_STEP_M = 0.6;
-const FIELD_ZERO_MAX_TRAVEL_M = 1.25;
+const FIELD_ZERO_MAX_STEP_M: number = FIELD_PHYSICS_SETTINGS.FIELD_ZERO_MAX_STEP_M;
+const FIELD_ZERO_MAX_TRAVEL_M: number = FIELD_PHYSICS_SETTINGS.FIELD_ZERO_MAX_TRAVEL_M;
 
 type FieldSample = { ex: number; ey: number; xx: number; xy: number; yy: number };
 
@@ -511,7 +541,7 @@ function insideFieldBounds(point: Point, bounds: FieldBounds): boolean {
 /** One Newton step toward E = 0, or null when the local Jacobian cannot be inverted. */
 function newtonStep(sample: FieldSample): Point | null {
   const det = sample.xx * sample.yy - sample.xy * sample.xy;
-  if (!(Math.abs(det) > 1e-8)) {
+  if (!(Math.abs(det) > FIELD_PHYSICS_SETTINGS.NEWTON_DETERMINANT_TOLERANCE)) {
     return null;
   }
   return {
@@ -523,7 +553,7 @@ function newtonStep(sample: FieldSample): Point | null {
 /** Walk from a seed to a nearby field zero, staying on the board and outside charge disks. */
 function refineFieldZero(charges: readonly Charge[], seed: Point, bounds: FieldBounds): Point | null {
   let current = seed;
-  for (let iteration = 0; iteration < 16; iteration++) {
+  for (let iteration = 0; iteration < FIELD_PHYSICS_SETTINGS.FIELD_ZERO_NEWTON_ITERATIONS; iteration++) {
     if (!insideFieldBounds(current, bounds)) {
       return null;
     }
@@ -588,8 +618,14 @@ export function findFieldZeros(sourceCharges: readonly Charge[], bounds: FieldBo
   }
   const probes = [
     { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 },
-    { x: bounds.minX + 0.4, y: bounds.minY + 0.4 },
-    { x: bounds.maxX - 0.4, y: bounds.maxY - 0.4 },
+    {
+      x: bounds.minX + FIELD_PHYSICS_SETTINGS.FIELD_ZERO_SEED_INSET,
+      y: bounds.minY + FIELD_PHYSICS_SETTINGS.FIELD_ZERO_SEED_INSET,
+    },
+    {
+      x: bounds.maxX - FIELD_PHYSICS_SETTINGS.FIELD_ZERO_SEED_INSET,
+      y: bounds.maxY - FIELD_PHYSICS_SETTINGS.FIELD_ZERO_SEED_INSET,
+    },
   ];
   const uniformlyZero = probes.every((probe) => {
     const sample = fieldSample(charges, probe);

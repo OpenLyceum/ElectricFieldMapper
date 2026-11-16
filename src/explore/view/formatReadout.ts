@@ -1,10 +1,11 @@
 import { toFixed } from "scenerystack/dot";
+import { FORMAT_READOUT_SETTINGS } from "../../ElectricFieldMapperConstants.js";
 
 /**
  * Formats a meter reading with about `digits` significant figures, as Charges and Fields does:
  * large readings drop decimals, small readings keep them.
  */
-export function formatSignificant(value: number, digits = 3): string {
+export function formatSignificant(value: number, digits: number = FORMAT_READOUT_SETTINGS.DEFAULT_DIGITS): string {
   if (Number.isNaN(value)) {
     return "–";
   }

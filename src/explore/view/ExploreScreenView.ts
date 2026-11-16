@@ -33,6 +33,7 @@ import {
   CHARGE_TOOLBOX_ICON_INSET,
   CHARGE_TOOLBOX_ICON_Y,
   CHARGE_TOOLBOX_WIDTH,
+  EXPLORE_SCREEN_VIEW_SETTINGS,
   GRID_SPACING_M,
   INFO_BUTTON_POINTER_AREA_DILATION,
   INFO_BUTTON_SCALE,
@@ -57,8 +58,11 @@ import { createVoltmeterIcon, VoltmeterNode } from "./VoltmeterNode.js";
 export type ExploreScreenViewOptions = ScreenViewOptions;
 
 /** Layout point where the model origin sits, and the board scale (view pixels per metre). */
-const ORIGIN_VIEW_POSITION = new Vector2(369, 284);
-const VIEW_PIXELS_PER_METRE = 83;
+const ORIGIN_VIEW_POSITION = new Vector2(
+  EXPLORE_SCREEN_VIEW_SETTINGS.ORIGIN_VIEW_POSITION_X,
+  EXPLORE_SCREEN_VIEW_SETTINGS.ORIGIN_VIEW_POSITION_Y,
+);
+const VIEW_PIXELS_PER_METRE: number = EXPLORE_SCREEN_VIEW_SETTINGS.VIEW_PIXELS_PER_METRE;
 
 /**
  * Moves a released item back inside the visible field, `margin` metres from its edges. Only assigns
@@ -166,7 +170,11 @@ export class ExploreScreenView extends ScreenView {
         model.removeSensor(sensor);
         return;
       }
-      clampToBoard(sensor.positionProperty, model.fieldBoundsProperty.value, 0.1);
+      clampToBoard(
+        sensor.positionProperty,
+        model.fieldBoundsProperty.value,
+        EXPLORE_SCREEN_VIEW_SETTINGS.FINISH_SENSOR_DRAG_MARGIN,
+      );
     };
     const addSensorNode = (sensor: ElectricFieldSensor): void => {
       const node = new ElectricFieldSensorNode(sensor, model, mvt, finishSensorDrag);
@@ -193,7 +201,11 @@ export class ExploreScreenView extends ScreenView {
         model.voltmeterActiveProperty.value = false;
         return;
       }
-      clampToBoard(model.voltmeterPositionProperty, model.fieldBoundsProperty.value, 0.05);
+      clampToBoard(
+        model.voltmeterPositionProperty,
+        model.fieldBoundsProperty.value,
+        EXPLORE_SCREEN_VIEW_SETTINGS.VOLTMETER_MARGIN,
+      );
     });
     this.addChild(voltmeter);
 
@@ -266,8 +278,16 @@ export class ExploreScreenView extends ScreenView {
     // ── Toolbox items ──────────────────────────────────────────────────────────
     /** Where keyboard-added items appear, staggered so they do not stack exactly. */
     const nextPosition = (count: number) => ({
-      x: Math.min(2.8, -0.6 + 0.35 * count),
-      y: Math.min(2, -0.6 + 0.2 * (count % 4)),
+      x: Math.min(
+        EXPLORE_SCREEN_VIEW_SETTINGS.NEXT_POSITION_X,
+        -0.6 + EXPLORE_SCREEN_VIEW_SETTINGS.NEXT_POSITION_X_FACTOR * count,
+      ),
+      y: Math.min(
+        2,
+        -0.6 +
+          EXPLORE_SCREEN_VIEW_SETTINGS.NEXT_POSITION_Y_FACTOR *
+            (count % EXPLORE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_NEXT_POSITION_Y_FACTOR),
+      ),
     });
     /**
      * A toolbox entry: pressing it creates an item at the icon and forwards the press so the
@@ -295,8 +315,8 @@ export class ExploreScreenView extends ScreenView {
             font: "13px sans-serif",
             fill: ElectricFieldMapperColors.textColorProperty,
             centerX: 0,
-            top: 21,
-            maxWidth: 70,
+            top: EXPLORE_SCREEN_VIEW_SETTINGS.TOOLBOX_ITEM_TOP,
+            maxWidth: EXPLORE_SCREEN_VIEW_SETTINGS.TOOLBOX_ITEM_MAX_WIDTH,
           }),
         );
       }
@@ -341,7 +361,7 @@ export class ExploreScreenView extends ScreenView {
       },
       () => {
         const p = nextPosition(model.sensors.length);
-        const sensor = model.addSensor({ x: p.x + 0.2, y: p.y + 1 });
+        const sensor = model.addSensor({ x: p.x + EXPLORE_SCREEN_VIEW_SETTINGS.SENSOR_X_OFFSET, y: p.y + 1 });
         sensorNodes.get(sensor)?.focus();
       },
     );
@@ -355,8 +375,8 @@ export class ExploreScreenView extends ScreenView {
         new Rectangle(0, 0, CHARGE_TOOLBOX_WIDTH, CHARGE_TOOLBOX_HEIGHT, {
           fill: ElectricFieldMapperColors.playAreaColorProperty,
           stroke: ElectricFieldMapperColors.panelBorderColorProperty,
-          lineWidth: 2,
-          cornerRadius: 5,
+          lineWidth: EXPLORE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_LINE_WIDTH,
+          cornerRadius: EXPLORE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_CORNER_RADIUS,
         }),
         positiveItem,
         negativeItem,
@@ -365,7 +385,7 @@ export class ExploreScreenView extends ScreenView {
     });
 
     // The voltmeter icon's origin is its crosshair, so a pulled-out voltmeter starts right under it.
-    const voltmeterIcon = createVoltmeterIcon({ scale: 0.6 });
+    const voltmeterIcon = createVoltmeterIcon({ scale: EXPLORE_SCREEN_VIEW_SETTINGS.VOLTMETER_ICON_SCALE });
     const voltmeterItem = toolboxItem(
       voltmeterIcon,
       null,
@@ -387,7 +407,7 @@ export class ExploreScreenView extends ScreenView {
     model.voltmeterActiveProperty.link((active) => {
       voltmeterItem.visible = !active;
     });
-    const tapeIcon = MeasuringTapeNode.createIcon({ scale: 0.8 });
+    const tapeIcon = MeasuringTapeNode.createIcon({ scale: EXPLORE_SCREEN_VIEW_SETTINGS.TAPE_ICON_SCALE });
     const tapeItem = toolboxItem(
       tapeIcon,
       null,
@@ -415,21 +435,21 @@ export class ExploreScreenView extends ScreenView {
       tapeItem.visible = !active;
     });
     const toolsColumn = new VBox({
-      spacing: 12,
+      spacing: EXPLORE_SCREEN_VIEW_SETTINGS.TOOLS_COLUMN_SPACING,
       align: "center",
       excludeInvisibleChildrenFromBounds: false,
       children: [voltmeterItem, tapeItem],
     });
     const toolBoxHeight = toolsColumn.height + 16;
     toolsColumn.centerX = CHARGE_TOOLBOX_WIDTH / 2;
-    toolsColumn.top = 8;
+    toolsColumn.top = EXPLORE_SCREEN_VIEW_SETTINGS.TOP_TOP;
     toolBox = new Node({
       children: [
         new Rectangle(0, 0, CHARGE_TOOLBOX_WIDTH, toolBoxHeight, {
           fill: ElectricFieldMapperColors.playAreaColorProperty,
           stroke: ElectricFieldMapperColors.panelBorderColorProperty,
-          lineWidth: 2,
-          cornerRadius: 5,
+          lineWidth: EXPLORE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_LINE_WIDTH,
+          cornerRadius: EXPLORE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_CORNER_RADIUS,
         }),
         toolsColumn,
       ],
@@ -442,7 +462,7 @@ export class ExploreScreenView extends ScreenView {
         content: new Text(label, {
           font: "bold 13px sans-serif",
           fill: ElectricFieldMapperColors.controlSurfaceTextColorProperty,
-          maxWidth: 200,
+          maxWidth: EXPLORE_SCREEN_VIEW_SETTINGS.BUTTON_MAX_WIDTH,
         }),
         accessibleName: label,
         listener: action,
@@ -450,14 +470,18 @@ export class ExploreScreenView extends ScreenView {
     const check = (property: typeof model.showLinesProperty, label: typeof ui.showLinesStringProperty) =>
       new Checkbox(
         property,
-        new Text(label, { font: "14px sans-serif", fill: ElectricFieldMapperColors.textColorProperty, maxWidth: 190 }),
+        new Text(label, {
+          font: "14px sans-serif",
+          fill: ElectricFieldMapperColors.textColorProperty,
+          maxWidth: EXPLORE_SCREEN_VIEW_SETTINGS.CHECK_MAX_WIDTH,
+        }),
         { ...ELECTRIC_FIELD_MAPPER_CHECKBOX_OPTIONS, accessibleName: label },
       );
     const heading = (label: typeof ui.chargesStringProperty) =>
       new Text(label, {
         font: "bold 16px sans-serif",
         fill: ElectricFieldMapperColors.textColorProperty,
-        maxWidth: 230,
+        maxWidth: EXPLORE_SCREEN_VIEW_SETTINGS.HEADING_MAX_WIDTH,
       });
     const removeLast = button(ui.removeLastStringProperty, () => {
       const last = model.charges[model.charges.length - 1];
@@ -506,11 +530,14 @@ export class ExploreScreenView extends ScreenView {
     const panel = new ElectricFieldMapperPanel(
       new VBox({
         align: "left",
-        spacing: 5,
+        spacing: EXPLORE_SCREEN_VIEW_SETTINGS.PANEL_SPACING,
         children: [
           heading(ui.chargesStringProperty),
           chargeBox,
-          new HBox({ spacing: 6, children: [removeLast, clearCharges] }),
+          new HBox({
+            spacing: EXPLORE_SCREEN_VIEW_SETTINGS.PANEL_ITEM_3_SPACING,
+            children: [removeLast, clearCharges],
+          }),
           new Text(ui.chargePresetsStringProperty, {
             font: "bold 14px sans-serif",
             fill: ElectricFieldMapperColors.textColorProperty,
@@ -526,12 +553,15 @@ export class ExploreScreenView extends ScreenView {
           check(model.showGridProperty, ui.showGridStringProperty),
           heading(ui.drawStringProperty),
           check(model.drawModeProperty, ui.drawModeStringProperty),
-          new HBox({ spacing: 6, children: [seedAtVoltmeter, clearLines] }),
+          new HBox({
+            spacing: EXPLORE_SCREEN_VIEW_SETTINGS.PANEL_ITEM_16_SPACING,
+            children: [seedAtVoltmeter, clearLines],
+          }),
           heading(ui.toolsStringProperty),
           toolBox,
         ],
       }),
-      { xMargin: 12, yMargin: 10 },
+      { xMargin: EXPLORE_SCREEN_VIEW_SETTINGS.PANEL_X_MARGIN, yMargin: EXPLORE_SCREEN_VIEW_SETTINGS.PANEL_Y_MARGIN },
     );
     this.addChild(panel);
     this.addChild(comboListParent);
@@ -574,14 +604,14 @@ export class ExploreScreenView extends ScreenView {
       model.keepItemsInField();
       measuringTapeNode.setDragBounds(fieldBounds);
       panel.right = visibleBounds.maxX - SCREEN_VIEW_MARGIN;
-      panel.top = visibleBounds.minY + SCREEN_VIEW_MARGIN - 6;
+      panel.top = visibleBounds.minY + SCREEN_VIEW_MARGIN - EXPLORE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
       reset.right = visibleBounds.maxX - SCREEN_VIEW_MARGIN;
       reset.bottom = visibleBounds.maxY - SCREEN_VIEW_MARGIN;
       infoButton.right = reset.left - INFO_RESET_BUTTON_SPACING;
       infoButton.centerY = reset.centerY;
       hint.maxWidth = Math.max(1, panel.left - visibleBounds.minX - 2 * SCREEN_VIEW_MARGIN);
       hint.left = visibleBounds.minX + SCREEN_VIEW_MARGIN;
-      hint.bottom = visibleBounds.maxY - SCREEN_VIEW_MARGIN + 4;
+      hint.bottom = visibleBounds.maxY - SCREEN_VIEW_MARGIN + EXPLORE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_BOTTOM_OFFSET;
     });
     this.addChild(
       new Node({ pdomOrder: [chargeLayer, sensorLayer, voltmeter, measuringTapeNode, panel, infoButton, reset] }),

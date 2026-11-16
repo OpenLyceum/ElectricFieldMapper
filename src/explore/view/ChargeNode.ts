@@ -3,13 +3,13 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { KeyboardListener, Node, RichDragListener } from "scenerystack/scenery";
 import { ChargeRepresentationNode } from "../../common/ChargeRepresentationNode.js";
 import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
-import { GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
+import { CHARGE_NODE_SETTINGS, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ExploreModel, PointCharge } from "../model/ExploreModel.js";
 
 /** Keyboard movement per key press or repeat, in view pixels when snapping is off. */
-const KEYBOARD_DRAG_DELTA = 10;
-const SHIFT_KEYBOARD_DRAG_DELTA = 3;
+const KEYBOARD_DRAG_DELTA: number = CHARGE_NODE_SETTINGS.KEYBOARD_DRAG_DELTA;
+const SHIFT_KEYBOARD_DRAG_DELTA: number = CHARGE_NODE_SETTINGS.SHIFT_KEYBOARD_DRAG_DELTA;
 
 export class ChargeNode extends Node {
   public readonly dragListener: RichDragListener;
@@ -31,7 +31,7 @@ export class ChargeNode extends Node {
     });
     const sphere = new ChargeRepresentationNode(charge.q);
     this.children = [sphere];
-    this.touchArea = sphere.localBounds.dilated(6);
+    this.touchArea = sphere.localBounds.dilated(CHARGE_NODE_SETTINGS.DILATED_DILATION);
     const update = (position: Vector2): void => {
       this.translation = mvt.modelToViewPosition(position);
       model.notifyChanged();

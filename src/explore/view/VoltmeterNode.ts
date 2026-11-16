@@ -18,7 +18,7 @@ import { RectangularPushButton } from "scenerystack/sun";
 import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
 import { asVoltageScale } from "../../common/model/FieldDisplayOptions.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
-import { VOLTMETER_CROSSHAIR_RADIUS } from "../../ElectricFieldMapperConstants.js";
+import { VOLTMETER_CROSSHAIR_RADIUS, VOLTMETER_NODE_SETTINGS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
 import { electricPotential, potentialSaturation } from "../model/FieldPhysics.js";
@@ -26,11 +26,14 @@ import { formatSignificant } from "./formatReadout.js";
 import { potentialCSS } from "./potentialColor.js";
 
 const R = VOLTMETER_CROSSHAIR_RADIUS;
-const BODY_WIDTH = 112;
+const BODY_WIDTH: number = VOLTMETER_NODE_SETTINGS.BODY_WIDTH;
 
 /** Crosshair ring and the mount below it; the origin is the measuring point. */
 function createCrosshair(): { node: Node; ring: Circle } {
-  const ring = new Circle(R, { lineWidth: 3, stroke: ElectricFieldMapperColors.voltmeterCrosshairColorProperty });
+  const ring = new Circle(R, {
+    lineWidth: VOLTMETER_NODE_SETTINGS.RING_LINE_WIDTH,
+    stroke: ElectricFieldMapperColors.voltmeterCrosshairColorProperty,
+  });
   const crosshair = new Path(new Shape().moveTo(-R, 0).lineTo(R, 0).moveTo(0, -R).lineTo(0, R), {
     stroke: ElectricFieldMapperColors.voltmeterCrosshairColorProperty,
   });
@@ -41,37 +44,71 @@ function createCrosshair(): { node: Node; ring: Circle } {
 }
 
 function createBody(content: Node): Node {
-  const background = new Rectangle(0, 0, BODY_WIDTH, Math.max(40, content.height + 16), 8, 8, {
-    fill: ElectricFieldMapperColors.voltmeterBodyColorProperty,
-    stroke: ElectricFieldMapperColors.voltmeterBodyStrokeColorProperty,
-    lineWidth: 2,
-    centerX: 0,
-    top: 1.4 * R,
-  });
+  const background = new Rectangle(
+    0,
+    0,
+    BODY_WIDTH,
+    Math.max(40, content.height + 16),
+    VOLTMETER_NODE_SETTINGS.BACKGROUND_CORNER_X,
+    VOLTMETER_NODE_SETTINGS.BACKGROUND_CORNER_Y,
+    {
+      fill: ElectricFieldMapperColors.voltmeterBodyColorProperty,
+      stroke: ElectricFieldMapperColors.voltmeterBodyStrokeColorProperty,
+      lineWidth: VOLTMETER_NODE_SETTINGS.BACKGROUND_LINE_WIDTH,
+      centerX: 0,
+      top: VOLTMETER_NODE_SETTINGS.BACKGROUND_TOP_FACTOR * R,
+    },
+  );
   content.center = background.center;
   return new Node({ children: [background, content] });
 }
 
 /** A small pencil, drawn tip-down-left, for the "plot equipotential" button. */
 function createPencilIcon(): Node {
-  const body = new Rectangle(0, -3.5, 16, 7, {
-    fill: ElectricFieldMapperColors.pencilBodyColorProperty,
-    stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
-    lineWidth: 1,
-  });
-  const eraser = new Rectangle(16, -3.5, 4, 7, {
-    fill: ElectricFieldMapperColors.pencilEraserColorProperty,
-    stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
-    lineWidth: 1,
-  });
-  const tip = new Path(new Shape().moveTo(0, -3.5).lineTo(-7, 0).lineTo(0, 3.5).close(), {
-    fill: ElectricFieldMapperColors.pencilTipColorProperty,
-    stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
-    lineWidth: 1,
-  });
-  const lead = new Path(new Shape().moveTo(-4.5, -1.3).lineTo(-7, 0).lineTo(-4.5, 1.3).close(), {
-    fill: ElectricFieldMapperColors.pencilLeadColorProperty,
-  });
+  const body = new Rectangle(
+    0,
+    VOLTMETER_NODE_SETTINGS.BODY_Y,
+    VOLTMETER_NODE_SETTINGS.BODY_WIDTH_SEGMENT_2,
+    VOLTMETER_NODE_SETTINGS.BODY_HEIGHT,
+    {
+      fill: ElectricFieldMapperColors.pencilBodyColorProperty,
+      stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
+      lineWidth: 1,
+    },
+  );
+  const eraser = new Rectangle(
+    VOLTMETER_NODE_SETTINGS.ERASER_X,
+    VOLTMETER_NODE_SETTINGS.ERASER_Y,
+    VOLTMETER_NODE_SETTINGS.ERASER_WIDTH,
+    VOLTMETER_NODE_SETTINGS.ERASER_HEIGHT,
+    {
+      fill: ElectricFieldMapperColors.pencilEraserColorProperty,
+      stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
+      lineWidth: 1,
+    },
+  );
+  const tip = new Path(
+    new Shape()
+      .moveTo(0, VOLTMETER_NODE_SETTINGS.TIP_Y)
+      .lineTo(VOLTMETER_NODE_SETTINGS.TIP_X, 0)
+      .lineTo(0, VOLTMETER_NODE_SETTINGS.TIP_Y_SEGMENT_2)
+      .close(),
+    {
+      fill: ElectricFieldMapperColors.pencilTipColorProperty,
+      stroke: ElectricFieldMapperColors.pencilOutlineColorProperty,
+      lineWidth: 1,
+    },
+  );
+  const lead = new Path(
+    new Shape()
+      .moveTo(VOLTMETER_NODE_SETTINGS.LEAD_X, VOLTMETER_NODE_SETTINGS.LEAD_Y)
+      .lineTo(VOLTMETER_NODE_SETTINGS.LEAD_X_SEGMENT_2, 0)
+      .lineTo(VOLTMETER_NODE_SETTINGS.LEAD_X, VOLTMETER_NODE_SETTINGS.LEAD_Y_SEGMENT_2)
+      .close(),
+    {
+      fill: ElectricFieldMapperColors.pencilLeadColorProperty,
+    },
+  );
   return new Node({ children: [body, eraser, tip, lead], rotation: -Math.PI / 4 });
 }
 
@@ -79,10 +116,18 @@ function createPencilIcon(): Node {
 export function createVoltmeterIcon(options?: NodeOptions): Node {
   const { node } = createCrosshair();
   const body = createBody(
-    new Rectangle(0, 0, BODY_WIDTH - 24, 22, 4, 4, {
-      fill: ElectricFieldMapperColors.voltmeterReadoutBackgroundColorProperty,
-      stroke: ElectricFieldMapperColors.voltmeterReadoutTextColorProperty,
-    }),
+    new Rectangle(
+      0,
+      0,
+      BODY_WIDTH - 24,
+      VOLTMETER_NODE_SETTINGS.BODY_HEIGHT_SEGMENT_2,
+      VOLTMETER_NODE_SETTINGS.BODY_CORNER_X,
+      VOLTMETER_NODE_SETTINGS.BODY_CORNER_Y,
+      {
+        fill: ElectricFieldMapperColors.voltmeterReadoutBackgroundColorProperty,
+        stroke: ElectricFieldMapperColors.voltmeterReadoutTextColorProperty,
+      },
+    ),
   );
   return new Node({ children: [node, body], ...options });
 }
@@ -117,17 +162,25 @@ export class VoltmeterNode extends Node {
     const title = new Text(ui.voltmeterStringProperty, {
       font: "bold 13px sans-serif",
       fill: ElectricFieldMapperColors.voltmeterTitleColorProperty,
-      maxWidth: BODY_WIDTH - 16,
+      maxWidth: BODY_WIDTH - VOLTMETER_NODE_SETTINGS.TITLE_MAX_WIDTH_OFFSET,
     });
     const readout = new Text("", {
       font: "14px sans-serif",
       fill: ElectricFieldMapperColors.voltmeterReadoutTextColorProperty,
-      maxWidth: BODY_WIDTH - 32,
+      maxWidth: BODY_WIDTH - VOLTMETER_NODE_SETTINGS.READOUT_MAX_WIDTH_OFFSET,
     });
-    const readoutBackground = new Rectangle(0, 0, BODY_WIDTH - 24, 22, 4, 4, {
-      fill: ElectricFieldMapperColors.voltmeterReadoutBackgroundColorProperty,
-      stroke: ElectricFieldMapperColors.voltmeterReadoutTextColorProperty,
-    });
+    const readoutBackground = new Rectangle(
+      0,
+      0,
+      BODY_WIDTH - 24,
+      VOLTMETER_NODE_SETTINGS.READOUT_BACKGROUND_HEIGHT,
+      VOLTMETER_NODE_SETTINGS.READOUT_BACKGROUND_CORNER_X,
+      VOLTMETER_NODE_SETTINGS.READOUT_BACKGROUND_CORNER_Y,
+      {
+        fill: ElectricFieldMapperColors.voltmeterReadoutBackgroundColorProperty,
+        stroke: ElectricFieldMapperColors.voltmeterReadoutTextColorProperty,
+      },
+    );
     const readoutBox = new Node({ children: [readoutBackground, readout] });
     const clearButton = new EraserButton({
       baseColor: ElectricFieldMapperColors.voltmeterButtonColorProperty,
@@ -138,15 +191,17 @@ export class VoltmeterNode extends Node {
     const plotButton = new RectangularPushButton({
       baseColor: ElectricFieldMapperColors.voltmeterButtonColorProperty,
       content: createPencilIcon(),
-      xMargin: 8,
-      yMargin: 5,
+      xMargin: VOLTMETER_NODE_SETTINGS.PLOT_BUTTON_X_MARGIN,
+      yMargin: VOLTMETER_NODE_SETTINGS.PLOT_BUTTON_Y_MARGIN,
       accessibleName: a11y.controls.plotEquipotentialStringProperty,
       listener: () => model.addEquipotentialAtVoltmeter(),
     });
-    const buttons = new HBox({ spacing: 10, children: [clearButton, plotButton] });
+    const buttons = new HBox({ spacing: VOLTMETER_NODE_SETTINGS.BUTTONS_SPACING, children: [clearButton, plotButton] });
     // Lay the body out around a placeholder, then put the real buttons over it as a sibling of the handle.
     const buttonSpace = new Rectangle(0, 0, buttons.width, buttons.height);
-    const body = createBody(new VBox({ spacing: 6, children: [title, readoutBox, buttonSpace] }));
+    const body = createBody(
+      new VBox({ spacing: VOLTMETER_NODE_SETTINGS.BODY_SPACING, children: [title, readoutBox, buttonSpace] }),
+    );
     buttons.translation = buttonSpace.localToGlobalPoint(Vector2.ZERO).minus(body.localToGlobalPoint(Vector2.ZERO));
     dragHandle.children = [crosshair, body];
     this.children = [dragHandle, buttons];

@@ -1,22 +1,23 @@
 import type { ArrowScale } from "../../common/model/FieldDisplayOptions.js";
+import { ARROW_DISPLAY_SETTINGS } from "../../ElectricFieldMapperConstants.js";
 
 /**
  * Field strength (V/m) at which a clipped-linear arrow reaches its full length.
  * @internal Exported for unit tests; not part of the application API.
  */
-export const LINEAR_ARROW_REFERENCE_VM = 30;
+export const LINEAR_ARROW_REFERENCE_VM: number = ARROW_DISPLAY_SETTINGS.LINEAR_ARROW_REFERENCE_VM;
 
 /**
  * Pixel length of a clipped-linear arrow at or above {@link LINEAR_ARROW_REFERENCE_VM}.
  * @internal Exported for unit tests; not part of the application API.
  */
-export const LINEAR_ARROW_MAX_LENGTH = 18;
+export const LINEAR_ARROW_MAX_LENGTH: number = ARROW_DISPLAY_SETTINGS.LINEAR_ARROW_MAX_LENGTH;
 
 /**
  * Shortest clipped-linear arrow. Weaker samples stay this long so their direction remains visible.
  * @internal Exported for unit tests; not part of the application API.
  */
-export const LINEAR_ARROW_MIN_LENGTH = 3;
+export const LINEAR_ARROW_MIN_LENGTH: number = ARROW_DISPLAY_SETTINGS.LINEAR_ARROW_MIN_LENGTH;
 
 /**
  * Pixel length and opacity for one sampled field arrow.
@@ -25,7 +26,7 @@ export const LINEAR_ARROW_MIN_LENGTH = 3;
  */
 export function arrowDisplay(magnitude: number, scale: ArrowScale): { length: number; opacity: number } {
   if (scale === "direction") {
-    return { length: 14, opacity: 0.9 };
+    return { length: 14, opacity: ARROW_DISPLAY_SETTINGS.ARROW_DISPLAY_OPACITY };
   }
   if (scale === "linear") {
     const fraction = Math.min(1, magnitude / LINEAR_ARROW_REFERENCE_VM);

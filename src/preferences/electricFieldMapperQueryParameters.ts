@@ -2,6 +2,7 @@ import { logGlobal } from "scenerystack/phet-core";
 import { QueryStringMachine } from "scenerystack/query-string-machine";
 import { CHARGE_PRESET_VALUES } from "../common/model/ChargePresets.js";
 import { ARROW_SCALES, LINES_PER_NANOCOULOMB, VOLTAGE_SCALES } from "../common/model/FieldDisplayOptions.js";
+import { ELECTRIC_FIELD_MAPPER_QUERY_PARAMETERS_SETTINGS } from "../ElectricFieldMapperConstants.js";
 import ElectricFieldMapperNamespace from "../ElectricFieldMapperNamespace.js";
 
 /**
@@ -18,7 +19,12 @@ const electricFieldMapperQueryParameters = QueryStringMachine.getAll({
   voltageScale: { type: "string", defaultValue: "40", validValues: VOLTAGE_SCALES, public: true },
   arrowScale: { type: "string", defaultValue: "compressed", validValues: ARROW_SCALES, public: true },
   fieldLineArrowheads: { type: "boolean", defaultValue: true, public: true },
-  linesPerNanocoulomb: { type: "number", defaultValue: 12, validValues: LINES_PER_NANOCOULOMB, public: true },
+  linesPerNanocoulomb: {
+    type: "number",
+    defaultValue: ELECTRIC_FIELD_MAPPER_QUERY_PARAMETERS_SETTINGS.ELECTRIC_FIELD_MAPPER_QUERY_PARAMETERS_DEFAULT_VALUE,
+    validValues: LINES_PER_NANOCOULOMB,
+    public: true,
+  },
   showFieldZeros: { type: "boolean", defaultValue: false, public: true },
   showVectors: { type: "boolean", defaultValue: true, public: true },
   showLines: { type: "boolean", defaultValue: true, public: true },

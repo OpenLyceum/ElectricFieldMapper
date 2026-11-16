@@ -3,7 +3,11 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode } from "scenerystack/scenery";
 import { asArrowScale, asVoltageScale } from "../../common/model/FieldDisplayOptions.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
-import { GRID_MINOR_LINES_PER_MAJOR, GRID_SPACING_M } from "../../ElectricFieldMapperConstants.js";
+import {
+  FIELD_CANVAS_NODE_SETTINGS,
+  GRID_MINOR_LINES_PER_MAJOR,
+  GRID_SPACING_M,
+} from "../../ElectricFieldMapperConstants.js";
 import type { ExploreModel } from "../model/ExploreModel.js";
 import {
   automaticFieldLines,
@@ -22,10 +26,10 @@ import { potentialRGB } from "./potentialColor.js";
 type Charges = ReturnType<ExploreModel["getSnapshot"]>;
 
 /** Model metres per voltage-map cell; the coarse image is smoothed when scaled up. */
-const VOLTAGE_CELL = 0.05;
+const VOLTAGE_CELL: number = FIELD_CANVAS_NODE_SETTINGS.VOLTAGE_CELL;
 
 /** Spacing of the sampled field arrows (metres); samples sit midway between major grid lines. */
-const VECTOR_SPACING = 0.5;
+const VECTOR_SPACING: number = FIELD_CANVAS_NODE_SETTINGS.VECTOR_SPACING;
 
 /**
  * Draws the voltage map, grid, equipotentials, vector samples, and continuous electric field lines
@@ -114,7 +118,7 @@ export class FieldCanvasNode extends CanvasNode {
     }
     ctx.strokeStyle = ElectricFieldMapperColors.fieldLineColorProperty.value.toCSS();
     ctx.fillStyle = ctx.strokeStyle;
-    ctx.lineWidth = 1.8;
+    ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.LINE_WIDTH_LINE_WIDTH;
     const arrowheads = this.model.fieldLineArrowheadsProperty.value;
     for (const line of lines) {
       this.drawLine(ctx, line, arrowheads);
@@ -125,7 +129,7 @@ export class FieldCanvasNode extends CanvasNode {
     const mvt = this.mvt;
     ctx.strokeStyle = ElectricFieldMapperColors.fieldArrowColorProperty.value.toCSS();
     ctx.fillStyle = ctx.strokeStyle;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.DRAW_VECTORS_LINE_WIDTH;
     // Samples stay on a fixed lattice so resizing the window does not shift them.
     const firstX = (Math.ceil(bounds.minX / VECTOR_SPACING - 0.5) + 0.5) * VECTOR_SPACING;
     const firstY = (Math.ceil(bounds.minY / VECTOR_SPACING - 0.5) + 0.5) * VECTOR_SPACING;
@@ -189,7 +193,7 @@ export class FieldCanvasNode extends CanvasNode {
 
   private drawEquipotentials(ctx: CanvasRenderingContext2D, charges: Charges, bounds: Bounds2): void {
     const color = ElectricFieldMapperColors.equipotentialLineColorProperty.value.toCSS();
-    ctx.lineWidth = 1.8;
+    ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.LINE_WIDTH_LINE_WIDTH;
     ctx.font = "13px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -254,7 +258,7 @@ export class FieldCanvasNode extends CanvasNode {
     ctx.lineWidth = 1;
     ctx.stroke(minorPath);
     ctx.globalAlpha = 0.28;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.DRAW_GRID_LINE_WIDTH;
     ctx.stroke(majorPath);
     ctx.globalAlpha = 1;
   }
@@ -300,15 +304,15 @@ export class FieldCanvasNode extends CanvasNode {
       const x = this.mvt.modelToViewX(zero.x);
       const y = this.mvt.modelToViewY(zero.y);
       ctx.beginPath();
-      ctx.arc(x, y, 6.5, 0, 2 * Math.PI);
-      ctx.lineWidth = 3.2;
+      ctx.arc(x, y, FIELD_CANVAS_NODE_SETTINGS.DRAW_FIELD_ZEROS_RADIUS, 0, 2 * Math.PI);
+      ctx.lineWidth = FIELD_CANVAS_NODE_SETTINGS.DRAW_FIELD_ZEROS_LINE_WIDTH;
       ctx.strokeStyle = halo;
       ctx.stroke();
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = color;
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
+      ctx.arc(x, y, FIELD_CANVAS_NODE_SETTINGS.ARC_RADIUS, 0, 2 * Math.PI);
       ctx.fillStyle = color;
       ctx.fill();
     }

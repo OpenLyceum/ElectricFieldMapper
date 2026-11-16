@@ -4,15 +4,15 @@ import { Circle, KeyboardListener, Node, type NodeOptions, RichDragListener, Tex
 import { ArrowNode } from "scenerystack/scenery-phet";
 import { REMOVE_ITEM_HOTKEY_DATA } from "../../common/ElectricFieldMapperHotkeyData.js";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
-import { FIELD_SENSOR_VIEW_RADIUS } from "../../ElectricFieldMapperConstants.js";
+import { ELECTRIC_FIELD_SENSOR_NODE_SETTINGS, FIELD_SENSOR_VIEW_RADIUS } from "../../ElectricFieldMapperConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ElectricFieldSensor, ExploreModel } from "../model/ExploreModel.js";
 import { electricField } from "../model/FieldPhysics.js";
 import { formatSignificant } from "./formatReadout.js";
 
 /** Screen pixels of arrow per V/m, and the longest arrow drawn (near a charge the field grows without bound). */
-const ARROW_PIXELS_PER_VOLT_PER_METRE = 12;
-const MAX_ARROW_LENGTH = 300;
+const ARROW_PIXELS_PER_VOLT_PER_METRE: number = ELECTRIC_FIELD_SENSOR_NODE_SETTINGS.ARROW_PIXELS_PER_VOLT_PER_METRE;
+const MAX_ARROW_LENGTH: number = ELECTRIC_FIELD_SENSOR_NODE_SETTINGS.MAX_ARROW_LENGTH;
 
 /** The yellow sensor disk on its own, as shown in the toolbox and at the centre of a placed sensor. */
 export function createFieldSensorDisk(options?: NodeOptions): Node {
@@ -44,14 +44,14 @@ export class ElectricFieldSensorNode extends Node {
       accessibleHelpText: a11y.controls.moveFieldSensorStringProperty,
     });
     const disk = createFieldSensorDisk();
-    this.touchArea = disk.localBounds.dilated(10);
+    this.touchArea = disk.localBounds.dilated(ELECTRIC_FIELD_SENSOR_NODE_SETTINGS.DILATED_DILATION);
     const arrow = new ArrowNode(0, 0, 1, 0, {
       pickable: false,
       fill: ElectricFieldMapperColors.fieldSensorArrowColorProperty,
       stroke: ElectricFieldMapperColors.fieldSensorArrowColorProperty,
-      headHeight: 10,
-      headWidth: 12,
-      tailWidth: 4,
+      headHeight: ELECTRIC_FIELD_SENSOR_NODE_SETTINGS.ARROW_HEAD_HEIGHT,
+      headWidth: ELECTRIC_FIELD_SENSOR_NODE_SETTINGS.ARROW_HEAD_WIDTH,
+      tailWidth: ELECTRIC_FIELD_SENSOR_NODE_SETTINGS.ARROW_TAIL_WIDTH,
     });
     const labelOptions = {
       font: "14px sans-serif",
