@@ -1,5 +1,5 @@
 import { QueryStringMachine } from "scenerystack/query-string-machine";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CHARGE_PRESETS } from "../src/common/model/ChargePresets.js";
 import { ExploreModel } from "../src/explore/model/ExploreModel.js";
 import electricFieldMapperQueryParameters from "../src/preferences/electricFieldMapperQueryParameters.js";
@@ -29,6 +29,8 @@ describe("launch query parameters", () => {
   });
 
   it("keeps the built-in defaults when a value is missing or unrecognized", () => {
+    // QueryStringMachine warns about each rejected public value; that warning is the expected behavior here.
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const parsed = QueryStringMachine.getAllForString(
       schema,
       "?preset=not-a-preset&showVoltage=maybe&voltageScale=nope&arrowScale=quadratic&linesPerNanocoulomb=20",
@@ -46,6 +48,7 @@ describe("launch query parameters", () => {
     expect(parsed.fieldLineArrowheads).toBe(true);
     expect(parsed.linesPerNanocoulomb).toBe(12);
     expect(parsed.showFieldZeros).toBe(false);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('"voltageScale"'));
   });
 
   it("opens on the requested configuration and restores it on reset", () => {
