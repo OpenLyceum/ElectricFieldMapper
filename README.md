@@ -42,6 +42,7 @@ Checkbox query parameters are `showVectors`, `showLines`, `automaticLines`, `sho
 | `npm run lint` | Check style with Biome |
 | `npm run check:unused` / `npm run knip` | Report unused files, exports, and dependencies (manual check) |
 | `npm run check:architecture` | dependency-cruiser layer and cycle rules on `src/` (manual check) |
+| `npm run icons` | Regenerate PNG icons from `public/icons/icon.svg` |
 | `npm test` | Run model, physics, and disposal tests |
 | `npm run test:fuzz:quick` | Run pointer and keyboard browser fuzz checks |
 | `npx playwright test tests/browser` | Run keyboard and preference browser regressions |
