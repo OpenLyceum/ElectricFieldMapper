@@ -6,6 +6,7 @@ import ElectricFieldMapperColors from "../src/ElectricFieldMapperColors.js";
 import { ElectricFieldSensor, ExploreModel, PointCharge } from "../src/explore/model/ExploreModel.js";
 import { ChargeNode } from "../src/explore/view/ChargeNode.js";
 import { ElectricFieldSensorNode } from "../src/explore/view/ElectricFieldSensorNode.js";
+import { FieldCanvasNode } from "../src/explore/view/FieldCanvasNode.js";
 import { StringManager } from "../src/i18n/StringManager.js";
 import { describeDisposalLeaks, expectNoListenerGrowth } from "./helpers/memoryLeak.js";
 
@@ -49,6 +50,35 @@ const sensorNodeDependencies = (): readonly object[] => [
   a11y.controls.moveFieldSensorStringProperty,
 ];
 
+// FieldCanvasNode links its repaint to these by hand (the colors are read in paintCanvas, not
+// passed as fill), so it must unlink every one even without a Display.
+const fieldCanvasDependencies = (): readonly object[] => [
+  model.fieldBoundsProperty,
+  model.changeCountProperty,
+  model.showVectorsProperty,
+  model.showLinesProperty,
+  model.showGridProperty,
+  model.automaticLinesProperty,
+  model.linesPerNanocoulombProperty,
+  model.voltageScaleProperty,
+  model.arrowScaleProperty,
+  model.fieldLineArrowheadsProperty,
+  model.showFieldZerosProperty,
+  model.showVoltageProperty,
+  model.showValuesProperty,
+  ElectricFieldMapperColors.gridColorProperty,
+  ElectricFieldMapperColors.fieldArrowColorProperty,
+  ElectricFieldMapperColors.fieldLineColorProperty,
+  ElectricFieldMapperColors.playAreaColorProperty,
+  ElectricFieldMapperColors.potentialPositiveColorProperty,
+  ElectricFieldMapperColors.potentialNegativeColorProperty,
+  ElectricFieldMapperColors.equipotentialLineColorProperty,
+  ElectricFieldMapperColors.equipotentialLabelBackgroundColorProperty,
+  ElectricFieldMapperColors.equipotentialLabelTextColorProperty,
+  ElectricFieldMapperColors.fieldZeroColorProperty,
+  ElectricFieldMapperColors.fieldZeroHaloColorProperty,
+];
+
 describeDisposalLeaks([
   { name: "PointCharge", create: () => new PointCharge(1, { x: 0, y: 0 }) },
   { name: "ElectricFieldSensor", create: () => new ElectricFieldSensor({ x: 0, y: 0 }) },
@@ -72,6 +102,11 @@ describeDisposalLeaks([
     create: () => new ElectricFieldSensorNode(sensor, model, mvt, noop),
     keepAlive: sensorNodeDependencies,
   },
+  {
+    name: "FieldCanvasNode",
+    create: () => new FieldCanvasNode(model, mvt),
+    keepAlive: () => [model, ...fieldCanvasDependencies()],
+  },
 ]);
 
 describe("charge and sensor views leave no listeners on live model state", () => {
@@ -90,6 +125,15 @@ describe("charge and sensor views leave no listeners on live model state", () =>
       sensor.positionProperty.value = new Vector2(0.5, 2);
       model.notifyChanged();
       model.showValuesProperty.value = !model.showValuesProperty.value;
+      node.dispose();
+    });
+  });
+
+  it("FieldCanvasNode create/dispose keeps model and manually linked color listener counts flat", async () => {
+    await expectNoListenerGrowth(fieldCanvasDependencies(), () => {
+      const node = new FieldCanvasNode(model, mvt);
+      model.notifyChanged();
+      model.showGridProperty.value = !model.showGridProperty.value;
       node.dispose();
     });
   });
