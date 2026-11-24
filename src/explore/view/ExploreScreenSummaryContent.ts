@@ -36,8 +36,11 @@ export class ExploreScreenSummaryContent extends ScreenSummaryContent {
       states.valuesShownStringProperty,
       states.valuesHiddenStringProperty,
     );
-    const fieldLineCount = new DerivedProperty([model.changeCountProperty], () => model.seedPoints.length);
-    const equipotentialCount = new DerivedProperty([model.changeCountProperty], () => model.equipotentialSeeds.length);
+    const fieldLineCountProperty = new DerivedProperty([model.changeCountProperty], () => model.seedPoints.length);
+    const equipotentialCountProperty = new DerivedProperty(
+      [model.changeCountProperty],
+      () => model.equipotentialSeeds.length,
+    );
     const details = new PatternStringProperty(a11y.currentDetailsStringProperty, {
       chargeCount: model.charges.lengthProperty,
       sensorCount: model.sensors.lengthProperty,
@@ -45,8 +48,8 @@ export class ExploreScreenSummaryContent extends ScreenSummaryContent {
       measuringTapeState,
       voltageMapState,
       valuesState,
-      fieldLineCount,
-      equipotentialCount,
+      fieldLineCountProperty,
+      equipotentialCountProperty,
     });
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
@@ -61,8 +64,8 @@ export class ExploreScreenSummaryContent extends ScreenSummaryContent {
         measuringTapeState,
         voltageMapState,
         valuesState,
-        fieldLineCount,
-        equipotentialCount,
+        fieldLineCountProperty,
+        equipotentialCountProperty,
       ]) {
         property.dispose();
       }

@@ -1,3 +1,4 @@
+import { roundSymmetric } from "scenerystack/dot";
 import type { Color } from "scenerystack/scenery";
 import ElectricFieldMapperColors from "../../ElectricFieldMapperColors.js";
 import { POTENTIAL_SATURATION, potentialColorFraction } from "../model/FieldPhysics.js";
@@ -29,5 +30,5 @@ export function potentialCSS(potential: number, alpha = 1, saturation = POTENTIA
     ElectricFieldMapperColors.potentialNegativeColorProperty.value,
     saturation,
   );
-  return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${alpha})`;
+  return `rgba(${roundSymmetric(r)},${roundSymmetric(g)},${roundSymmetric(b)},${alpha})`;
 }
