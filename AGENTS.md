@@ -59,3 +59,7 @@ Run `npm run lint && npm run check && npm run build && npm test` in this directo
 ## Compliance carve-outs
 
 - **Hardcoded colors (computed):** `src/explore/view/potentialColor.ts` generates RGB/RGBA CSS by blending `ElectricFieldMapperColors` profile values; this is not an independent hardcoded palette.
+
+## Accessibility
+
+Follow [Baton/ACCESSIBILITY.md](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md): PDOM names, per-screen `*ScreenSummaryContent`, and keyboard-help content. Document any intentional deviations under Compliance carve-outs.
