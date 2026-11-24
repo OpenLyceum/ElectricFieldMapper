@@ -1,3 +1,4 @@
+import { roundSymmetric } from "scenerystack/dot";
 import type { VoltageScale } from "../../common/model/FieldDisplayOptions.js";
 import type { Point } from "../../common/model/Point.js";
 import { FIELD_PHYSICS_SETTINGS } from "../../ElectricFieldMapperConstants.js";
@@ -264,7 +265,7 @@ function symmetricPairFieldLines(charges: readonly Charge[], bounds: FieldBounds
     return null;
   }
   const lines: Point[][] = [];
-  const lineCount = Math.round(count * Math.abs(a.q));
+  const lineCount = roundSymmetric(count * Math.abs(a.q));
   for (const charge of [a, b]) {
     const orientation = charge === a ? 1 : -1;
     const inward = { x: (orientation * dx) / separation, y: (orientation * dy) / separation };
@@ -311,7 +312,7 @@ export function automaticFieldLines(
   const arrivals = sinks.map(() => 0);
 
   for (const sourceCharge of charges.filter((charge) => charge.q > 0)) {
-    const lineCount = Math.round(count * sourceCharge.q);
+    const lineCount = roundSymmetric(count * sourceCharge.q);
     for (let i = 0; i < lineCount; i++) {
       const angle = (2 * Math.PI * i) / lineCount;
       const seed = {
@@ -331,7 +332,7 @@ export function automaticFieldLines(
   }
 
   for (const [sinkIndex, charge] of sinks.entries()) {
-    const lineCount = Math.round(count * -charge.q);
+    const lineCount = roundSymmetric(count * -charge.q);
     const needed = Math.max(0, lineCount - (arrivals[sinkIndex] ?? 0));
     if (needed === 0) {
       continue;

@@ -8,7 +8,7 @@ import {
   StringProperty,
   type TReadOnlyProperty,
 } from "scenerystack/axon";
-import { Bounds2, Vector2, Vector2Property } from "scenerystack/dot";
+import { Bounds2, roundSymmetric, Vector2, Vector2Property } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
 import { CHARGE_PRESETS, type ChargePreset, isChargePreset } from "../../common/model/ChargePresets.js";
 import type { FieldDisplayPreferences } from "../../common/model/FieldDisplayOptions.js";
@@ -216,7 +216,7 @@ export class ExploreModel implements TModel {
 
   public snapPosition(point: Point): Vector2 {
     const snap = (value: number, min: number, max: number) => {
-      const rounded = Math.round(value / GRID_SPACING_M) * GRID_SPACING_M;
+      const rounded = roundSymmetric(value / GRID_SPACING_M) * GRID_SPACING_M;
       // Visible edges need not lie on the grid. Clamp to whole grid points inside the margin.
       const firstGridPoint = Math.ceil((min + GRID_SPACING_M) / GRID_SPACING_M) * GRID_SPACING_M;
       const lastGridPoint = Math.floor((max - GRID_SPACING_M) / GRID_SPACING_M) * GRID_SPACING_M;
@@ -278,7 +278,7 @@ export class ExploreModel implements TModel {
     const spacing = GRID_SPACING_M / GRID_MINOR_LINES_PER_MAJOR;
     const bounds = this.fieldBoundsProperty.value;
     const snap = (value: number, min: number, max: number): number => {
-      const rounded = Math.round(Math.round(value / spacing) * spacing * 1e6) / 1e6;
+      const rounded = roundSymmetric(roundSymmetric(value / spacing) * spacing * 1e6) / 1e6;
       return Math.max(min, Math.min(max, rounded));
     };
     return new Vector2(snap(point.x, bounds.minX, bounds.maxX), snap(point.y, bounds.minY, bounds.maxY));

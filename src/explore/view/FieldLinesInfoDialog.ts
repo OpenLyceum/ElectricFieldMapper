@@ -21,12 +21,14 @@ export class FieldLinesInfoDialog extends Dialog {
       fill: ElectricFieldMapperColors.textColorProperty,
       maxWidth: INFO_DIALOG_LINE_WRAP,
     });
-    const spokenBody = new DerivedProperty([ui.infoBodyStringProperty], (markup) => markup.replace(/<\/?b>/g, ""));
+    const spokenBodyProperty = new DerivedProperty([ui.infoBodyStringProperty], (markup) =>
+      markup.replace(/<\/?b>/g, ""),
+    );
     const body = new RichText(ui.infoBodyStringProperty, {
       font: new PhetFont(FIELD_LINES_INFO_DIALOG_SETTINGS.BODY_FONT_SIZE),
       fill: ElectricFieldMapperColors.textColorProperty,
       lineWrap: INFO_DIALOG_LINE_WRAP,
-      accessibleParagraph: spokenBody,
+      accessibleParagraph: spokenBodyProperty,
     });
     super(body, {
       title,
