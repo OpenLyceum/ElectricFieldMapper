@@ -48,8 +48,8 @@ export class ExploreScreenSummaryContent extends ScreenSummaryContent {
       measuringTapeState,
       voltageMapState,
       valuesState,
-      fieldLineCountProperty,
-      equipotentialCountProperty,
+      fieldLineCount: fieldLineCountProperty,
+      equipotentialCount: equipotentialCountProperty,
     });
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
