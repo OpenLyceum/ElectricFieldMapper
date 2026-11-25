@@ -54,7 +54,7 @@ The ideal point-charge field is singular at a charge. `CHARGE_RADIUS` masks that
 
 ## Testing
 
-Run `npm run lint && npm run check && npm run build && npm test` in this directory, then `npm run test:fuzz:quick`. Run sim-specific browser regressions with `npx playwright test tests/browser`. Persistent screen/model/tool nodes live for the simulation lifetime; dynamically removed charge and sensor nodes require full disposal. The memory-leak suite covers the dynamic model objects and the `ChargeNode` / `ElectricFieldSensorNode` views against a live model, items and a11y strings.
+Run `npm run lint && npm run check && npm run build && npm test` in this directory, then `npm run test:fuzz:quick`. Run sim-specific browser regressions with `npm run test:browser`. Persistent screen/model/tool nodes live for the simulation lifetime; dynamically removed charge and sensor nodes require full disposal. The memory-leak suite covers the dynamic model objects and the `ChargeNode` / `ElectricFieldSensorNode` views against a live model, items and a11y strings.
 
 ## Compliance carve-outs
 
